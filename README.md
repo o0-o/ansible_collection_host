@@ -30,7 +30,7 @@ Versions 2.11+
 
 - `ansible-pylibssh`
 
-### Supported connections
+## Supported connections
 
 - `ssh`
 - `ansible.netcommon.network_cli`
