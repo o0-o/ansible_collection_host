@@ -1,0 +1,23 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Test RouterOS connection
+#
+########################################################################
+
+# docs.ansible.com/ansible/latest/network/user_guide/platform_routeros.html
+- name: Add +cet1024w suffix to Ansible user (RouterOS)
+  ansible.builtin.set_fact:
+    ansible_user: "{{ ansible_user }}+cet1024w"
+  when: ansible_user | regex_search( '+cet1024w' | regex_escape + '$' ) is none
+
+- name: Test the connection (RouterOS)
+  community.routeros.command:
+    commands:
+      - /put [/system identity get value-name=name]
+  register: test_con_reg
+  changed_when: false
+  failed_when: test_con_reg['stdout_lines'][0][0] == ''
+  ignore_errors: true
+  ignore_unreachable: true
+  timeout: 10

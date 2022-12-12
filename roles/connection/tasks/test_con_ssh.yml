@@ -1,0 +1,19 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Test SSH connection
+#
+########################################################################
+
+# Assume any host capable of SSH connection has echo. This avoids false
+# positives where SSH doesn't explicitly fail on systems that should use
+# network_cli. In those cases, SSH commands will appear to succeed but
+# will actually have no effect and produce no output.
+- name: Test the connection (SSH)
+  ansible.builtin.raw: echo 0
+  register: test_con_reg
+  changed_when: false
+  failed_when: test_con_reg['stdout_lines'][0] | default != '0'
+  ignore_errors: true
+  ignore_unreachable: true
+  timeout: 10

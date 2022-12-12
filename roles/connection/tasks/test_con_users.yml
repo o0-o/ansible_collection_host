@@ -1,0 +1,35 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Test the connection with common administrator user names
+#
+########################################################################
+
+- name: Define a list of administrator user names to try
+  ansible.builtin.set_fact:
+    con_adms: "{{ con_adms | default(default_adms, true) }}"
+
+- name: Try the connection with different users
+  block:
+
+    - name: Define the Ansible user
+      ansible.builtin.set_fact:
+        ansible_user: "{{ con_adms | first }}"
+
+    - name: >-
+        Run tasks to test the connection with Ansible user {{ ansible_user }}
+      ansible.builtin.include_tasks: test_con_oses.yml
+
+  rescue:
+
+    - name: Remove invalid administrator user name from the list
+      ansible.builtin.set_fact:
+        con_adms: "{{ con_adms[1:] }}"
+
+    - name: The administrator user name list is not exhausted
+      ansible.builtin.assert:
+        that: con_adms != []
+        quiet: true
+
+    - name: Recursively run this tasks file
+      ansible.builtin.include_tasks: test_con_users.yml

@@ -1,0 +1,66 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Test connection with parameters from Vagrant
+#
+########################################################################
+
+# There are edge cases where minimal version of some operating systems
+# only have which or only have command, so we try both.
+- name: Vagrant is available on localhost
+  ansible.builtin.shell:
+    cmd: which vagrant || command -v vagrant
+  changed_when: false
+  delegate_to: 127.0.0.1
+
+# Look for Vagrant SSH configuration under FQDN but fall back to
+# short hostname.
+- name: Get SSH configuration from Vagrant
+  ansible.builtin.shell:
+    chdir: "{{ lookup('env', 'PWD') }}"
+    cmd: >-
+      vagrant ssh-config {{ hostname_underscored_var }} ||
+      vagrant ssh-config {{ inventory_hostname_short }}
+  changed_when: false
+  register: vagrant_ssh_cfg_reg
+  vars:
+    hostname_underscored_var: >-
+      {{ inventory_hostname | regex_replace('\.', '_') }}
+  delegate_to: 127.0.0.1
+
+# These must be set with set_fact and not passed to test_con via vars
+- name: Define connection parameters based on Vagrant's SSH configuration
+  ansible.builtin.set_fact:
+    ansible_user: "{{ vagrant_ssh_cfg_reg['stdout']
+                      | regex_search('User .*$', multiline=true)
+                      | split(' ')
+                      | last }}"
+    ansible_host: "{{ vagrant_ssh_cfg_reg['stdout']
+                      | regex_search('HostName .*$', multiline=true)
+                      | split(' ')
+                      | last }}"
+    ansible_port: "{{ vagrant_ssh_cfg_reg['stdout']
+                      | regex_search('Port .*$', multiline=true)
+                      | split(' ')
+                      | last }}"
+    ansible_ssh_private_key_file: >-
+      {{  vagrant_ssh_cfg_reg['stdout']
+          | regex_search( 'IdentityFile .*$', multiline=true )
+          | split(' ')
+          | last }}
+
+# Not sure if vagrant ssh-config would ever provide a hostname other
+# than 127.0.0.1, but just in case.
+- name: The Vagrant host is reachable from localhost
+  ansible.builtin.command:
+    argv:
+      - ping
+      - -c
+      - 2
+      - "{{ ansible_host }}"
+  changed_when: false
+  delegate_to: 127.0.0.1
+  when: ansible_host != '127.0.0.1'
+
+- name: Run tasks to test the connection based on Vagrant configuration
+  ansible.builtin.include_tasks: test_con_oses.yml
