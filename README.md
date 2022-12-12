@@ -1,8 +1,8 @@
-# oØ.o's Host Collection for Ansible
+# oØ.o's host collection for Ansible
 
 This collection includes Ansible roles and plugins for opinionated, portable configuration of hosts with an emphasis on complete automation. Manual intervention is limited as much as possible, including writes to the Ansible inventory. Storage, network and service configuration are intentionally not included here (they are handled or will be handled by other `o0_o` collections).
 
-## Code of Conduct
+## Code of conduct
 
 Be excellent to each other.
 
@@ -60,7 +60,7 @@ Versions 2.11+
     - o0_o.host.connection
 ```
 
-### Installing the Collection from Ansible Galaxy
+### Installing the collection from Ansible Galaxy
 
 ```shell
 pip install ansible-pylibssh

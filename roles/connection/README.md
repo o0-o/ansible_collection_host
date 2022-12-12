@@ -10,7 +10,7 @@ Configure Ansible's connection to the host.
 pip install ansible-pylibssh
 ```
 
-## Role Variables
+## Role variables
 
 ### Ansible configuration
 
