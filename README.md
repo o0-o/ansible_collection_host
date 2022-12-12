@@ -1,6 +1,6 @@
 # oØ.o's Host Collection for Ansible
 
-This collection includes Ansible roles and plugins for opinionated, portable configuration of hosts with an emphasis on complete automation. Manual intervention is limited as much as possible, including writes to the Ansible inventory. Storage, network and service configuration are intentionally not included here (they are handled or will be handled by other `o0_o` collections.
+This collection includes Ansible roles and plugins for opinionated, portable configuration of hosts with an emphasis on complete automation. Manual intervention is limited as much as possible, including writes to the Ansible inventory. Storage, network and service configuration are intentionally not included here (they are handled or will be handled by other `o0_o` collections).
 
 ## Code of Conduct
 
@@ -8,7 +8,7 @@ Be excellent to each other.
 
 ## Communication
 
-Releases and other important changes will be announced through [the Github repository](https://github.com/o0-o/ansible_collection_host)
+Releases and other important changes will be announced through [the Github repository](https://github.com/o0-o/ansible_collection_host).
 
 ## Contributing to this collection
 
@@ -93,7 +93,10 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 
 ## Release notes
 
-See the [changelog](https://github.com/o0-o/ansible_collection_host/tree/main/CHANGELOG.rst).
+### `0.1.0-alpha.1`
+- Initially created the collection.
+- `first_found_by_host_attributes` lookup plugin added.
+- `connection` role added.
 
 ## Roadmap
 
