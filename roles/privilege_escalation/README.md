@@ -10,6 +10,8 @@ None
 
 ### Vars
 
+See `vars/` for platform-specific overrides of the variables below which are set in `vars/main.yml`.
+
 #### `doas`
 
 ```yaml
@@ -52,7 +54,7 @@ adm_seuser: staff_u
   gather_facts: false
   any_errors_fatal: true
   roles:
-     - o0_o.host.connection
+     - o0_o.host.privilege_escalation
 ```
 
 ## License
