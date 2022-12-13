@@ -8,6 +8,14 @@ None
 
 ## Role variables
 
+### Optional
+
+#### `new_ansible_user_var`
+
+Set this value to configure Ansible's become method for a different user than the current Ansible user. This is useful for setting up privilege escalation for a user before setting `ansible_user` to that user. Note that `ansible_user` is not updated by this role but should be set to the new value as soon as this role is finished running as it will update `ansible_become_method` which may break `become` on the current Ansible user.
+
+See `o0_o.host.ansible_user` for how this is done in practice.
+
 ### Vars
 
 See `vars/` for platform-specific overrides of the variables below which are set in `vars/main.yml`.
