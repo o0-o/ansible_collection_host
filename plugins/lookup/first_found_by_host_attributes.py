@@ -113,7 +113,6 @@ DOCUMENTATION = """
         required: False
       default:
         type: string
-        default: None
         description:
           - This is a default file name to search for.
           - The default file is matched last.
@@ -285,9 +284,10 @@ class LookupModule(first_found.LookupModule):
 
         plat_terms = [{'files': files, 'paths': paths}]
 
-        # Handle skip if it was enabled in the plugin parameters
+        # Use /dev/null to handle skip if it was enabled in the plugin
+        # parameters
         if self.get_option('skip'):
-            plat_terms.append('/dev/null')
+            plat_terms.append({'files': ['null'], 'paths': ['/dev/']})
 
         # Return the terms to be used by first_found
         return plat_terms
