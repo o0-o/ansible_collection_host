@@ -1,0 +1,25 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure doas as the become method
+#
+########################################################################
+
+- name: Configure user with passwordless doas privileges
+  ansible.builtin.lineinfile:
+    path: "{{ doas_cfg_path }}/{{ doas_cfg_file }}"
+    regexp: " {{ user_var | regex_escape }}$"
+    line: "permit nopass {{ user_var }}"
+    state: present
+    mode: "{{ doas_cfg_mode }}"
+    create: true
+    backup: true
+    validate: "{{ doas_bin }} -C %s"
+  become: "{{ become_var }}"
+
+# Remove unnecessary software as a rule
+- name: Remove the sudo package
+  ansible.builtin.package:
+    name: sudo
+    state: absent
+  become: "{{ become_var }}"

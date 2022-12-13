@@ -1,0 +1,91 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure sudo as the become method
+#
+########################################################################
+
+- name: Create sudoers.d subdirectory
+  ansible.builtin.file:
+    path: "{{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}"
+    state: directory
+    mode: "{{ sudo_cfg_subdir_mode }}"
+  become: "{{ become_var }}"
+
+# The character prefix for includedir in sudoers may be # or @ so we use
+# both. This is the approach used by Debian, so we assume it's vetted.
+- name: Configure sudoers.d inclusion in sudoers
+  ansible.builtin.lineinfile:
+    path: "{{ sudo_cfg_path }}/{{ sudo_cfg_file }}"
+    line: >-
+      {{ incl_pfx_item }}includedir {{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}
+    state: present
+    backup: true
+    validate: "{{ visudo_bin }} -cf %s"
+  become: "{{ become_var }}"
+  loop:
+    - '@'
+    - '#'
+  loop_control:
+    loop_var: incl_pfx_item
+
+# Discover and configure the mandatory access control system in place
+# (if any). This is required to properly configure sudo and SELinux.
+- name: Run the mandatory access control role
+  ansible.builtin.include_role:
+    name: o0_o.host.mandatory_access_control
+  when: mac is undefined
+
+- name: Try to configure the user with SELinux context
+  when: mac | default == 'selinux'
+  block:
+
+    - name: Run tasks to configure the Ansible user with SELinux context
+      ansible.builtin.include_tasks: cfg_become_ssh_sudo_user_selinux.yml
+
+  rescue:
+
+    - name: >-
+        Run the mandatory access control role in case the SELinux context
+        failed
+      ansible.builtin.include_role:
+        name: o0_o.host.mandatory_access_control
+
+    - name: Run tasks to configure the Ansible user with SELinux context
+      ansible.builtin.include_tasks: cfg_become_ssh_sudo_user_selinux.yml
+
+- name: Configure user with passwordless sudo privileges
+  ansible.builtin.lineinfile:
+    path: "{{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}/{{ user_var }}"
+    regexp: "^{{ user_var | regex_escape }} "
+    line: "{{ user_var }} {{ sudo_passwordless_adm_var }}"
+    state: present
+    mode: "{{ sudo_cfg_subdir_file_mode }}"
+    create: true
+    validate: "{{ visudo_bin }} -cf %s"
+  become: "{{ become_var }}"
+  vars:
+    sudo_passwordless_adm_var: >-
+      {{  ( mac | default == 'selinux' )
+          | ternary(  'ALL=(ALL) TYPE=sysadm_t ROLE=sysadm_r NOPASSWD: ALL',
+                      'ALL=(ALL) NOPASSWD: ALL' ) }}
+
+# reset_connection does not support the when parameter and it cannot be
+# run by a handler.
+- name: Use block/rescue to conditionally reset the connection
+  when: user_selinux_context_change_reg is defined
+  block:
+
+    - name: The user's security context was not changed
+      ansible.builtin.assert:
+        that: >-
+          user_selinux_context_change_reg is skipped
+          or user_selinux_context_change_reg is not changed
+
+  rescue:
+
+    - name: Reset connection to the host
+      ansible.builtin.meta: reset_connection
+
+    # Don't flush handlers here because restoring SELinux contexts is
+    # an expensive operation.

@@ -1,0 +1,8 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml
+#
+# Privilege escalation variables specific to macOS
+#
+########################################################################
+
+sudo_cfg_path: /private/etc

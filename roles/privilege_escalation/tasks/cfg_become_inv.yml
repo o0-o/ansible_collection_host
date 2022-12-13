@@ -1,0 +1,22 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure the become method in the local inventory
+#
+########################################################################
+
+- name: Configure the inventory
+  ansible.builtin.import_role:
+    name: o0_o.inventory
+    allow_duplicates: false
+
+- name: Write become method to the local inventory
+  ansible.builtin.lineinfile:
+    path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}.yml"
+    regexp: '^#?ansible_become_method:'
+    insertbefore: EOF
+    firstmatch: true
+    line: "ansible_become_method: {{ ansible_become_method }}"
+    backup: "{{ inv_bu }}"
+  delegate_to: 127.0.0.1
+  notify: git commit inventory

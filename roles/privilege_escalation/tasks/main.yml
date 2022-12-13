@@ -1,0 +1,45 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure the Ansible become method (privilege escalation)
+#
+# A user can be supplied with user, user_var or user_item variables,
+# otherwise, ansible_user is used. This allows us to determine the
+# become method for a user before defining it as ansible_user.
+#
+# We don't assume Python is available, but if the role must be run
+# before Python is installed, it should be run again to ensure all
+# configuration is applied. To grant become privileges to a user that
+# is not currently privileged, Python must be available.
+#
+########################################################################
+
+# Handling of the user variables is delicate because it's very easy to
+# run into an infinite loop where ansible_user=ansible_user. Tread
+# lightly. See o0_o.host.ansible_user for an example of how to approach
+# the new_ansible_user_var variable.
+- name: Configure become for current or new Ansible user
+  vars:
+    user_var: "{{ new_ansible_user_var | default(ansible_user) }}"
+  block:
+
+    # We use skip=true here in the case of RouterOS which does not
+    # require any become method.
+    - name: Run tasks to configure the become method
+      ansible.builtin.include_tasks:
+        file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                          'tasks',
+                          prefix='cfg_become_',
+                          skip=true ) }}"
+      when:
+        - user_var is defined
+        - user_var != 'root'
+
+    - name: Set become method to null for root
+      ansible.builtin.set_fact:
+        ansible_become_method:
+      when: user_var == 'root'
+
+- name: Run tasks to configure become method in the inventory
+  ansible.builtin.include_tasks: cfg_become_inv.yml
+  when: ansible_become_method | default != ''

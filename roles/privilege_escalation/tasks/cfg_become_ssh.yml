@@ -1,0 +1,60 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Attempt to configure different become methods for systems using an SSH
+#
+########################################################################
+
+- name: Define platform-specific become variables
+  ansible.builtin.include_vars:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'vars',
+                      skip=true ) }}"
+
+- name: Configure Ansible become method
+  block:
+
+    - name: Attempt to use different become methods
+      block:
+
+        - name: If the become method is already set, try to use it
+          block:
+
+            - name: The become method is already defined
+              ansible.builtin.assert:
+                that: ansible_become_method is in ['doas', 'sudo']
+                quiet: true
+
+            - name: Run tasks to configure the become method
+              ansible.builtin.include_tasks: cfg_become_ssh_cmd.yml
+
+          rescue:
+
+            # Prefer doas if it is available.
+            - name: Run tasks to attempt to configure doas
+              ansible.builtin.include_tasks: cfg_become_ssh_cmd.yml
+              vars:
+                ansible_become_method: doas
+
+      rescue:
+
+        # Fall back to sudo if doas is not already installed.
+        - name: Run tasks to attempt to configure sudo
+          ansible.builtin.include_tasks: cfg_become_ssh_cmd.yml
+          vars:
+            ansible_become_method: sudo
+
+  rescue:
+
+    # Attempt to install sudo as a last resort. This is only possible if
+    # ansible_user=root and new_ansible_user_var is defined.
+    - name: Install sudo
+      ansible.builtin.package:
+        name: sudo
+        state: present
+      become: true
+
+    - name: Run tasks to configure sudo
+      ansible.builtin.include_tasks: cfg_become_ssh_cmd.yml
+      vars:
+        ansible_become_method: sudo

@@ -1,0 +1,27 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Privilege escalation variables
+#
+# These values may be overridden by values specified in the other files
+# in this folder named after different types of systems.
+#
+########################################################################
+
+# doas
+doas_cfg_path: /etc
+doas_cfg_file: doas.conf
+doas_cfg_mode: 0600
+doas_bin: /usr/bin/doas
+
+# sudo
+sudo_cfg_path: /etc
+sudo_cfg_file: sudoers
+sudo_cfg_subdir: sudoers.d
+sudo_cfg_subdir_mode: 0750
+sudo_cfg_subdir_file_mode: 0440
+sudo_bin: /usr/bin/sudo
+visudo_bin: /usr/sbin/visudo
+
+# selinux
+adm_seuser: staff_u

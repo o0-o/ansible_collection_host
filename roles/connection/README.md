@@ -33,6 +33,7 @@ This is a list of common default administrator user names. This is useful when y
 ## Dependencies
 
 - `o0_o.inventory`
+- `community.routeros`
 
 ## Example playbook
 
