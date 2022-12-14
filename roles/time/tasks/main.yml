@@ -1,0 +1,24 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Sync time with localhost if it is outside of the configured tolerance
+#
+########################################################################
+
+- name: Run tasks to define the time on the remote host
+  ansible.builtin.include_tasks:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'tasks',
+                      prefix='def_time_' ) }}"
+
+- name: Run tasks to sync time with localhost if necessary
+  ansible.builtin.include_tasks:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'tasks',
+                      prefix='cfg_time_' ) }}"
+  vars:
+    local_datetime_var: "{{ now(true, '%Y-%m-%d %H:%M:%S') }}" #GMT
+    diff_var: "{{ ( ( local_datetime_var | to_datetime
+                      - remote_datetime | to_datetime ).total_seconds() / 60 )
+                  | abs }}"
+  when: diff_var | int > time_sync_tolerance

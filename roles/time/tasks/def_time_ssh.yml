@@ -1,0 +1,26 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define the time a host using SSH
+#
+# The raw module is used because time sync may be necessary to
+# successfully install Python (see o0_o.host.python_interpreter).
+#
+########################################################################
+
+# Time format strings differ between different systems, and since we
+# can't assume facts have been gathered, we use uname.
+- name: Run uname to get the system platform before facts can be gathered
+  ansible.builtin.raw: "{{ ansible_become_method | default }} uname"
+  register: uname_reg
+  changed_when: false
+
+# -u flag = GMT/UTC
+- name: Get time from the host
+  ansible.builtin.raw: date -u '+%Y-%m-%d %H:%M:%S'
+  register: remote_date_reg
+  changed_when: false
+
+- name: Define the current time on the remote host
+  ansible.builtin.set_fact:
+    remote_datetime: "{{ remote_date_reg['stdout_lines'][0] }}"

@@ -1,0 +1,21 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Sync time with localhost on a RouterOS host
+#
+########################################################################
+
+# Use set_fact here to avoid an absurdly unlikely edge case where date
+# could be calculated a moment before time on exactly midnight causing
+# the time to be set 24 hours behind.
+- name: Define the datetime on localhost
+  ansible.builtin.set_fact:
+    local_datetime: "{{ '%b/%d/%Y %H:%M:%S' | strftime( now(true, '%s') ) }}"
+
+- name: Sync the time with locahost (RouterOS)
+  community.routeros.command:
+    commands:
+      - "/system clock set date={{ local_datetime | split | first }}"
+      - "/system clock set time={{ local_datetime | split | last }}"
+  register: ros_set_datetime_reg
+  failed_when: ros_set_datetime_reg['stdout'] != ['', '']

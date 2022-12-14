@@ -1,0 +1,33 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Sync time with localhost on a host using SSH
+#
+# The raw module is used because time sync may be necessary to
+# successfully install Python (see o0_o.host.python_interpreter).
+#
+########################################################################
+
+- name: Define the date format as mmddHHMMccyy.ss
+  ansible.builtin.set_fact:
+    date_format: '%m%d%H%M%Y.%S'
+  when: uname_reg['stdout_lines'][0] | lower in ['linux', 'darwin']
+
+- name: Define the date format as ccyymmddHHMM.ss
+  ansible.builtin.set_fact:
+    date_format: '%Y%m%d%H%M.%S'
+  when: uname_reg['stdout_lines'][0] | lower in ['freebsd', 'openbsd']
+
+# Set the time in GMT without configuring the system to use GMT
+- name: Configure time
+  ansible.builtin.raw: >-
+    {{ ansible_become_method | default }} TZ=GMT date
+    {{ now( true, date_format) }}
+  when: not ansible_check_mode
+
+# Emulate check mode behavior
+- name: The time would be changed (check mode)
+  ansible.builtin.debug:
+    msg: The previous task would have resulted in a change.
+  changed_when: true
+  when: ansible_check_mode
