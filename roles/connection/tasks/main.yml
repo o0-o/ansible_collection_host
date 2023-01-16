@@ -38,7 +38,7 @@
             - name: Define all possible administrators
               ansible.builtin.set_fact:
                 possible_adms: >-
-                  {{  ( ansible_user is defined )
+                  {{  ( ansible_user | default != '' )
                       | ternary(  [ansible_user]
                                   + default_adms
                                     | difference( [ansible_user] ),
