@@ -1,0 +1,24 @@
+{# vim: ts=2:sw=2:sts=2:et:ft=jinja2
+
+YUM or DNF repository configuration file
+
+#}
+{{ header_var }}
+
+[{{ repo_item['repo'] }}]
+{% if repo_item['method'] == 'baseurl' %}
+baseurl={{ repo_item['url'] }}{{ repo_item['url_path'] }}
+{% elif repo_item['method'] == 'mirrorlist' %}
+mirrorlist={{ repo_item['url'] }}/{{ ( pkg_mgr_name_item == 'dnf' ) | ternary('mirrorlist', '' ) }}?{{ repo_item['url_vars'] }}
+{% else %}
+metalink={{ repo_item['url'] }}/metalink?{{ repo_item['url_vars'] }}
+{% endif %}
+{% for key in repo_item.keys()
+              | list
+              | difference( [ 'repo',
+                              'method',
+                              'url',
+                              'url_vars',
+                              'url_path' ] ) %}
+{{ key }}={{ repo_item[key] }}
+{% endfor %}

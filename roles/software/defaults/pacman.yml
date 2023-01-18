@@ -1,0 +1,19 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Package manager defaults for Pacman
+#
+########################################################################
+
+pkg_mgr_cfg:
+  pacman:
+    HoldPkg:
+      - pacman
+      - glibc
+    Architecture: auto
+    CheckSpace:
+    SigLevel:
+      - Required
+      - DatabaseOptional
+    LocalFileSigLevel:
+      - Optional

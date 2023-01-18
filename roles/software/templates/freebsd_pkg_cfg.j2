@@ -1,0 +1,10 @@
+{# vim: ts=2:sw=2:sts=2:et:ft=jinja2
+
+FreeBSD package manager configuration file
+
+#}
+{{ header_var }}
+
+{% for key in pkg_mgr_cfg_var.keys() | list %}
+{{ key }}: {{ pkg_mgr_cfg_var[key] | to_nice_json }}
+{% endfor %}

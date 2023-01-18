@@ -1,0 +1,15 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Package manager defaults
+#
+########################################################################
+
+auto_update:
+  type: security
+  freq: daily
+
+auto_reboot: true
+
+repo_defaults:
+  enabled: false

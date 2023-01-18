@@ -1,0 +1,56 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure basic software management on an SSH host
+#
+########################################################################
+
+- name: Run tasks to define the system
+  ansible.builtin.include_tasks: def_sys_ssh.yml
+  when: sys is undefined
+
+- name: Define system software defaults
+  ansible.builtin.include_vars:
+    file: "defaults/{{ linux_os_release['ID'] | default(sys) }}.yml"
+    name: sys_sw_defaults
+
+- name: Set system software variables to defaults if they are not defined
+  ansible.builtin.set_fact:
+    "{{ key_item }}": "{{ vars[key_item]
+                          | default( sys_sw_defaults[key_item] ) }}"
+  loop: "{{ sys_sw_defaults.keys() | list }}"
+  loop_control:
+    loop_var: key_item
+
+# Package managers may fail to check for updates if time is skewed
+- name: Run the o0_o.host.time role to synchronize time with localhost
+  ansible.builtin.include_role:
+    name: o0_o.host.time
+    public: false
+
+- name: Run tasks to configure software based on the system if necessary
+  ansible.builtin.include_tasks: "{{ tasks_file_var }}"
+  vars:
+    tasks_file_var: "tasks/cfg_sw_ssh_{{ sys }}.yml"
+  when: lookup('ansible.builtin.fileglob', tasks_file_var) != []
+
+- name: Run tasks to configure each package manager
+  ansible.builtin.include_tasks: cfg_sw_ssh_pkg-mgr.yml
+  vars:
+    pkg_mgr_var: "{{ pkg_mgrs[pkg_mgr_name_item] }}"
+    pkg_mgr_name_pretty_var: >-
+      {{  ( pkg_mgr_name_item in ['yum', 'dnf'] )
+          | ternary(  pkg_mgr_name_item | upper,
+                      pkg_mgr_name_item | title ) }}
+    header_var: "\
+      {{  ( title_var + '\n \n' + default_comment_header )
+          | wordwrap(70)
+          | comment(  prefix=default_comment_prefix,
+                      postfix=default_comment_postfix ) }}"
+    notify_var: initialize package manager
+  loop: "{{ ( repos | default({}) ).keys() | list }}"
+  loop_control:
+    loop_var: pkg_mgr_name_item
+
+- name: Flush handers
+  ansible.builtin.meta: flush_handlers

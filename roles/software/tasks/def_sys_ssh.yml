@@ -1,0 +1,20 @@
+
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define basic system attributes using raw commands
+#
+########################################################################
+
+- name: Run uname to get the system type
+  ansible.builtin.raw: uname
+  register: uname_reg
+  changed_when: false
+
+- name: Define the system type
+  ansible.builtin.set_fact:
+    sys: "{{ uname_reg['stdout_lines'][0] | lower }}"
+
+- name: Run tasks to define the Linux distribution
+  ansible.builtin.include_tasks: def_dist_ssh_linux.yml
+  when: sys == 'linux'

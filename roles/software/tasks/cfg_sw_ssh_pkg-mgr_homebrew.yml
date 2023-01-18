@@ -1,0 +1,19 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure Homebrew using raw SSH commands
+#
+########################################################################
+
+- name: Only support Homebrew on macOS
+  ansible.builtin.assert:
+    that: sys == 'darwin'
+
+- name: Gather facts so we can install Homebrew (using Xcode's Python)
+  ansible.builtin.setup:
+
+- name: Run the geerlingguy.mac.homebrew role
+  ansible.builtin.include_role:
+    name: geerlingguy.mac.homebrew
+  vars:
+    homebrew_taps: ( repos_var | default({}, true) ).keys() | list

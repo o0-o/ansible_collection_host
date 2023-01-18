@@ -1,0 +1,56 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Package manager defaults for CentOS Linux
+#
+########################################################################
+
+# The exactarch and distroverpkg parameters are not in the yum.conf
+# documentation but they are in CentOS's yum.conf so we include them
+# here along with CentOS's bug tracker.
+dist_pkg_mgr_cfg:
+  yum:
+    exactarch: 1
+    bugtracker_url: "http://bugs.centos.org/set_project.php?\
+      project_id=23&\
+      ref=http://bugs.centos.org/bug_report_page.php?category=yum"
+    distroverpkg: centos-release
+
+dist_repo_defaults:
+  yum:
+    method: mirrorlist
+    url: http://mirrorlist.centos.org
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+repos:
+  yum:
+    base:
+      name: CentOS-$releasever - Base
+      file: CentOS-Base
+      url_vars: 'release=$releasever&arch=$basearch&repo=os&infra=$infra'
+      url_path: /$releasever/os/$basearch/
+      enabled: true
+    updates:
+      name: CentOS-$releasever - Updates
+      file: CentOS-Updates
+      url_vars: 'release=$releasever&arch=$basearch&repo=updates&infra=$infra'
+      url_path: /$releasever/updates/$basearch/
+      enabled: true
+    extras:
+      name: CentOS-$releasever - Extras
+      file: CentOS-Extras
+      url_vars: 'release=$releasever&arch=$basearch&repo=extras&infra=$infra'
+      url_path: /$releasever/extras/$basearch/
+    centosplus:
+      name: CentOS-$releasever - Plus
+      file: CentOS-Plus
+      url_vars: 'release=$releasever&arch=$basearch&repo=centosplus&infra=$infra'
+      url_path: /$releasever/centosplus/$basearch/
+    epel:
+      name: Extra Packages for Enterprise Linux 7 - $basearch
+      file: CentOS-EPEL
+      url_vars: '?repo=epel-7&arch=$basearch'
+      url_path: /epel/7/$basearch
+      method: metalink
+      repo_url: https://mirrors.fedoraproject.org
+      repo_gpgcheck: 0

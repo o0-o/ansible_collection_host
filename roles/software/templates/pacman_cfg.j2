@@ -1,0 +1,30 @@
+{# vim: ts=2:sw=2:sts=2:et:ft=jinja2
+
+Pacman configuration file
+
+#}
+{{ header_var }}
+
+[options]
+{% for key in pkg_mgr_cfg_var %}
+{% if pkg_mgr_cfg_var[key] | type_debug == 'NoneType' %}
+{{ key }}
+{% elif pkg_mgr_cfg_var[key] | type_debug == 'list' %}
+{{ key }} = {{ pkg_mgr_cfg_var[key] | join(' ') }}
+{% else %}
+{{ key }} = {{ pkg_mgr_cfg_var[key] }}
+{% endif %}
+{% endfor %}
+{% for repo in repo_list | selectattr('enabled', '==', true) %}
+
+[{{ repo['repo'] }}]
+{% for key in repo.keys() | list | difference( ['repo', 'enabled'] ) %}
+{% if repo[key] | type_debug == 'NoneType' %}
+{{ key }}
+{% elif repo[key] | type_debug == 'list' %}
+{{ key }} = {{ repo[key] | join(' ') }}
+{% else %}
+{{ key }} = {{ repo[key] }}
+{% endif %}
+{% endfor %}
+{% endfor %}

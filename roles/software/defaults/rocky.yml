@@ -1,0 +1,53 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Package manager defaults for Rocky Linux
+#
+########################################################################
+
+dist_repo_defaults:
+  dnf:
+    method: mirrorlist
+    url: https://mirrors.rockylinux.org
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+
+repos:
+  dnf:
+    baseos:
+      name: Rocky Linux $releasever - BaseOS
+      url_vars: 'arch=$basearch&repo=BaseOS-$releasever'
+      url_path: /$contentdir/$releasever/BaseOS/$basearch/os/
+      enabled: true
+    appstream:
+      name: Rocky Linux $releasever - AppStream
+      url_vars: 'arch=$basearch&repo=AppStream-$releasever'
+      url_path: /$contentdir/$releasever/AppStream/$basearch/os/
+      enabled: true
+    extras:
+      name: Rocky Linux $releasever - Extras
+      url_vars: 'arch=$basearch&repo=extras-$releasever'
+      url_path: /$contentdir/$releasever/extras/$basearch/os/
+    ha:
+      name: Rocky Linux $releasever - HighAvailability
+      url_vars: 'arch=$basearch&repo=HighAvailability-$releasever'
+      url_path: /$contentdir/$releasever/HighAvailability/$basearch/os/
+    nfv:
+      name: Rocky Linux $releasever - NFV
+      url_vars: 'arch=$basearch&repo=NFV-$releasever'
+      url_path: /$contentdir/$releasever/nfv/$basearch/os/
+    plus:
+      name: Rocky Linux $releasever - Plus
+      url_vars: 'arch=$basearch&repo=rockyplus-$releasever'
+      url_path: /$contentdir/$releasever/plus/$basearch/os/
+    powertools:
+      name: Rocky Linux $releasever - PowerTools
+      url_vars: 'arch=$basearch&repo=PowerTools-$releasever'
+      url_path: /$contentdir/$releasever/PowerTools/$basearch/os/
+    resilient-storage:
+      name: Rocky Linux $releasever - ResilientStorage
+      url_vars: 'arch=$basearch&repo=ResilientStorage-$releasever'
+      url_path: /$contentdir/$releasever/ResilientStorage/$basearch/os/
+    rt:
+      name: Rocky Linux $releasever - Realtime
+      url_vars: 'arch=$basearch&repo=RT-$releasever'
+      url_path: /$contentdir/$releasever/RT/$basearch/os/

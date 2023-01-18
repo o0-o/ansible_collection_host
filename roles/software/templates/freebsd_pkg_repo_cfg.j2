@@ -1,0 +1,12 @@
+{# vim: ts=2:sw=2:sts=2:et:ft=jinja2
+
+FreeBSD repository configuration file
+
+#}
+{{ header_var }}
+
+{{ repo_item['repo'] }}: {
+{% for key in repo_item.keys() | list | difference( ['repo'] ) %}
+  {{ key }}: {{ repo_item[key] | to_json }}
+{% endfor %}
+}
