@@ -1,0 +1,66 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure repositories on an SSH host using the raw module
+#
+# These tasks will configure repositories in separate configuration
+# files as in the case of RHEL distributions.
+#
+########################################################################
+
+- name: >-
+    List configuration files currently in repositories configuration directory
+  ansible.builtin.raw: >-
+    {{ ansible_become_method | default }} ls -1
+    {{ repos_cfg_dir_var | quote }}
+  register: repo_cfg_files_reg
+  changed_when: false
+
+- name: There are extraneous repository configuration files
+  vars:
+    extra_files_var: >-
+      {{  repo_cfg_files_reg['stdout_lines']
+          | map('basename')
+          | select('match', ".*{{ ext_var | default | regex_escape }}$")
+          | difference( repos.keys()
+                        | list
+                        | product( [ ext_var | default ] )
+                        | map('join') ) }}
+  when: extra_files_var != []
+  block:
+
+    - name: Backup extraneous repository configuration files
+      ansible.builtin.raw: >-
+        {{ ansible_become_method | default }} mv
+        {{ extra_file_path_var | quote }}
+        {{ extra_file_path_var | quote }}".$(date +%Y%m%d%H%M%S)~"
+      vars:
+        extra_file_path_var: >-
+          {{ repos_cfg_dir_var }}/{{ extra_file_item}}
+      when: not ansible_check_mode
+      loop: "{{ extra_files_var }}"
+      loop_control:
+        loop_var: extra_file_item
+
+    - name: The previous task would have resulted in a change (check mode)
+      ansible.builtin.debug:
+        msg: >-
+          {{ extra_files_var | length }} repository configuration files
+          would have been renamed.
+      changed_when: true
+      when: ansible_check_mode
+
+- name: Run tasks to template the each repository config file
+  ansible.builtin.include_tasks: cfg_sw_ssh_pkg-mgr_template_raw.yml
+  vars:
+    cfg_file_var: >-
+      {{ repos_cfg_dir_var }}/{{ repo_item['repo'] }}{{ ext_var
+                                                        | default }}
+    title_var: >-
+      {{ pkg_mgr_name_pretty_var }} {{ repo_item['repo'] }}
+      Repository Configuration
+    template_file_var: >-
+      {{ pkg_mgr_name_item | regex_replace('^yum$', 'dnf') }}_repo_cfg.j2
+  loop: "{{ repo_list }}"
+  loop_control:
+    loop_var: repo_item

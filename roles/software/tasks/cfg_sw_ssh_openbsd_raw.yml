@@ -1,0 +1,33 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Install and/or update firmware on OpenBSD using the raw module
+#
+########################################################################
+
+- name: Check if firmware updates are available (OpenBSD)
+  ansible.builtin.raw: >-
+    {{ ansible_become_method | default }}
+    fw_update -n -p {{ fw_url }}/{{ sys_release }}
+  register: obsd_fw_update_reg
+  changed_when: false
+
+- name: Firmware is missing or udpates are available
+  when: >-
+    obsd_fw_update_reg['stdout_lines']
+    | select('match', '^.*added none.*updated none.*$')
+    == []
+  block:
+
+    - name: Install and/or update firmware (OpenBSD)
+      ansible.builtin.raw: >-
+        {{ ansible_become_method | default }}
+        fw_update -a -p {{ fw_url }}/{{ sys_release }}
+      when:
+        - not ansible_check_mode
+
+    - name: The previous task would have resulted in a change (check mode)
+      ansible.builtin.debug:
+        msg: Firmware would have been installed or updated
+      changed_when: true
+      when: ansible_check_mode

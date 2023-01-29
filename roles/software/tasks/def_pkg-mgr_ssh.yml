@@ -1,0 +1,35 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define the package manager on an SSH host
+#
+########################################################################
+
+- name: Define package manager software defaults
+  ansible.builtin.include_vars:
+    file: "{{ defaults_file_var }}"
+    name: pkg_mgr_defaults
+
+# Replicate defaults/main.yml precedence.
+- name: Set package manager variables to defaults if they are not defined
+  ansible.builtin.set_fact:
+    "{{ key_item }}": "{{ vars[key_item]
+                          | default( pkg_mgr_defaults[key_item] ) }}"
+  loop: "{{ pkg_mgr_defaults.keys() | list }}"
+  loop_control:
+    loop_var: key_item
+
+- name: Define a list of repositories
+  ansible.builtin.set_fact:
+    repo_list: "{{ repo_list | default([]) | union( [repo_var] ) }}"
+  vars:
+    repo_var: >-
+      {{  [ { 'repo': repo_item['key'] },
+            repo_defaults | default({}, true),
+            pkg_mgr_repo_defaults[pkg_mgr_name_item] | default({}, true),
+            dist_repo_defaults[pkg_mgr_name_item] | default({}, true),
+            repo_item['value'] | default({}, true) ]
+          | combine }}
+  loop: "{{ repos[pkg_mgr_name_item] | dict2items }}"
+  loop_control:
+    loop_var: repo_item

@@ -5,8 +5,8 @@
 #
 ########################################################################
 
-tasks_file_suffix: "{{  ( ansible_facts == {} | default({}) )
-                        |ternary('_raw', '') }}"
+tasks_file_suffix: "{{  ( ansible_facts | default({}) == {} )
+                        | ternary('_raw', '') }}"
 
 pkg_mgrs:
 

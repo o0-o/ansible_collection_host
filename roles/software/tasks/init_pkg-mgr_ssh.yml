@@ -10,7 +10,6 @@
     argv: "{{ [ pkg_mgr_item['init_cmd'] | default( pkg_mgr_item['cmd'] ),
                 pkg_mgr_item['init_arg'] | default ]
               + pkg_mgr_item['init_opts'] | default([]) }}"
-  register: clean_pm_cache_reg
   when: >-
     pkg_mgr_item['init_cmd'] is defined
     or pkg_mgr_item['init_arg'] is defined
@@ -21,7 +20,6 @@
     argv: "{{ [ pkg_mgr_item['key_cmd'] | default( pkg_mgr_item['cmd'] ),
                 pkg_mgr_item['key_arg'] | default ]
               + pkg_mgr_item['key_opts'] | default([]) | join(' ') }}"
-  register: clean_pm_cache_reg
   when: >-
     pkg_mgr_item['key_cmd'] is defined
     or pkg_mgr_item['key_arg'] is defined
@@ -32,7 +30,6 @@
     argv: "{{ [ pkg_mgr_item['clean_cmd'] | default( pkg_mgr_item['cmd'] ),
                 pkg_mgr_item['clean_arg'] | default ]
               + pkg_mgr_item['clean_opts'] | default([]) | join(' ') }}"
-  register: clean_pm_cache_reg
   when: >-
     pkg_mgr_item['clean_cmd'] is defined
     or pkg_mgr_item['clean_arg'] is defined

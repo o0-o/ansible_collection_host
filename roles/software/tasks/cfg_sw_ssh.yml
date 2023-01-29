@@ -5,9 +5,15 @@
 #
 ########################################################################
 
-- name: Run tasks to define the system software
-  ansible.builtin.include_tasks:
-    file: "def_sw_sys_ssh{{ tasks_file_suffix }}.yml"
+- name: >-
+    Run the o0_o.host.facts role to gather preliminary facts with raw commands
+  ansible.builtin.include_role:
+    name: o0_o.host.facts
+    allow_duplicates: false
+    public: true
+
+- name: Run tasks to define the software defaults
+  ansible.builtin.include_tasks: def_sw_ssh.yml
 
 # Package managers may fail to check for updates if time is skewed
 - name: Run the o0_o.host.time role to synchronize time with localhost
@@ -15,6 +21,7 @@
     name: o0_o.host.time
     public: false
 
+# See vars/main.yml for tasks_file_suffix
 - name: Run tasks to configure software based on the system if necessary
   ansible.builtin.include_tasks: "{{ tasks_file_var }}"
   vars:

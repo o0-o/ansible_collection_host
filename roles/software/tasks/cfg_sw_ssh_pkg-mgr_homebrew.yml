@@ -7,7 +7,7 @@
 
 - name: Only support Homebrew on macOS
   ansible.builtin.assert:
-    that: sys == 'darwin'
+    that: ansible_system | default(sys) | lower == 'darwin'
 
 - name: Gather facts so we can install Homebrew (using Xcode's Python)
   ansible.builtin.setup:

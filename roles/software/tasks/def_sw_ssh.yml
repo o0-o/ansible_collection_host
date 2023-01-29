@@ -16,7 +16,7 @@
           | default(sys)
           | lower }}
 
-# Replicate defaults/main.yml behavior.
+# Replicate defaults/main.yml precedence.
 - name: Set system software variables to defaults if they are not defined
   ansible.builtin.set_fact:
     "{{ key_item }}": "{{ vars[key_item]
