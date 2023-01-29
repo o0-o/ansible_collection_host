@@ -1,7 +1,7 @@
 ---
 # vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
 #
-# Configure Homebrew using raw SSH commands
+# Configure Homebrew on an SSH commands
 #
 ########################################################################
 

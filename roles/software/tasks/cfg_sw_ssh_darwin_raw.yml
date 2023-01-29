@@ -68,3 +68,10 @@
         msg: Xcode command line tools would have been enabled.
       changed_when: true
       when: ansible_check_mode
+
+- name: Confirm that Python is available
+  ansible.builtin.ping:
+
+- name: Python is available now, so don't fallback to raw module
+  ansible.builtin.set_fact:
+    tasks_file_suffix: ''

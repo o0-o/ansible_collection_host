@@ -6,11 +6,10 @@
 ########################################################################
 
 - name: Initialize the package manager cache
-  ansible.builtin.raw: >-
-    {{ ansible_become_method | default }}
-    {{ pkg_mgr_item['init_cmd'] | default( pkg_mgr_item['cmd'] ) }}
-    {{ pkg_mgr_item['init_arg'] | default }}
-    {{ pkg_mgr_item['init_opts'] | default([]) | join(' ') }}
+  ansible.builtin.command:
+    argv: "{{ [ pkg_mgr_item['init_cmd'] | default( pkg_mgr_item['cmd'] ),
+                pkg_mgr_item['init_arg'] | default ]
+              + pkg_mgr_item['init_opts'] | default([]) }}"
   register: clean_pm_cache_reg
   when: >-
     pkg_mgr_item['init_cmd'] is defined
@@ -18,11 +17,10 @@
     or pkg_mgr_item['init_opts'] is defined
 
 - name: Set up GPG keys for the package manager
-  ansible.builtin.raw: >-
-    {{ ansible_become_method | default }}
-    {{ pkg_mgr_item['key_cmd'] | default( pkg_mgr_item['cmd'] ) }}
-    {{ pkg_mgr_item['key_arg'] | default }}
-    {{ pkg_mgr_item['key_opts'] | default([]) | join(' ') }}
+  ansible.builtin.command:
+    argv: "{{ [ pkg_mgr_item['key_cmd'] | default( pkg_mgr_item['cmd'] ),
+                pkg_mgr_item['key_arg'] | default ]
+              + pkg_mgr_item['key_opts'] | default([]) | join(' ') }}"
   register: clean_pm_cache_reg
   when: >-
     pkg_mgr_item['key_cmd'] is defined
@@ -30,11 +28,10 @@
     or pkg_mgr_item['key_opts'] is defined
 
 - name: Clean the package manager cache
-  ansible.builtin.raw: >-
-    {{ ansible_become_method | default }}
-    {{ pkg_mgr_item['clean_cmd'] | default( pkg_mgr_item['cmd'] ) }}
-    {{ pkg_mgr_item['clean_arg'] | default }}
-    {{ pkg_mgr_item['clean_opts'] | default([]) | join(' ') }}
+  ansible.builtin.command:
+    argv: "{{ [ pkg_mgr_item['clean_cmd'] | default( pkg_mgr_item['cmd'] ),
+                pkg_mgr_item['clean_arg'] | default ]
+              + pkg_mgr_item['clean_opts'] | default([]) | join(' ') }}"
   register: clean_pm_cache_reg
   when: >-
     pkg_mgr_item['clean_cmd'] is defined
@@ -42,16 +39,15 @@
     or pkg_mgr_item['clean_opts'] is defined
 
 - name: Update the package manager cache
-  ansible.builtin.raw: >-
-    {{ ansible_become_method | default }}
-    {{ pkg_mgr_item['update_cmd'] | default( pkg_mgr_item['cmd'] ) }}
-    {{ pkg_mgr_item['update_arg'] | default }}
-    {{ pkg_mgr_item['update_opts'] | default([]) | join(' ') }}
+  ansible.builtin.command:
+    argv: "{{ [ pkg_mgr_item['update_cmd'] | default( pkg_mgr_item['cmd'] ),
+                pkg_mgr_item['update_arg'] | default ]
+              + pkg_mgr_item['update_opts'] | default([]) | join(' ') }}"
   register: up_pm_cache_reg
   failed_when: >-
     up_pm_cache_reg['rc'] not in  pkg_mgr_item['update_success_codes']
                                   | default([0])
   when: >-
-    pkg_mgr_item['update_arg'] is defined
+    pkg_mgr_item['update_cmd'] is defined
     or pkg_mgr_item['update_arg'] is defined
     or pkg_mgr_item['update_opts'] is defined

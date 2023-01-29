@@ -44,7 +44,8 @@ repos:
     centosplus:
       name: CentOS-$releasever - Plus
       file: CentOS-Plus
-      url_vars: 'release=$releasever&arch=$basearch&repo=centosplus&infra=$infra'
+      url_vars: >-
+        release=$releasever&arch=$basearch&repo=centosplus&infra=$infra
       url_path: /$releasever/centosplus/$basearch/
     epel:
       name: Extra Packages for Enterprise Linux 7 - $basearch

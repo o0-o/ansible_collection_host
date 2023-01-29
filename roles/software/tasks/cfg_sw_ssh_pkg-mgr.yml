@@ -1,52 +1,26 @@
 ---
 # vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
 #
-# Configure basic package management on an SSH host
+# Configure package management on an SSH host
 #
 ########################################################################
 
-- name: The package manager has default variables
+- name: Run tasks to define the package manager
+  ansible.builtin.include_tasks: def_pkg-mgr_ssh.yml
   vars:
     defaults_file_var: "defaults/{{ pkg_mgr_name_item }}.yml"
   when: lookup('ansible.builtin.fileglob', defaults_file_var) != []
-  block:
-
-    - name: Define package manager software defaults
-      ansible.builtin.include_vars:
-        file: "{{ defaults_file_var }}"
-        name: pkg_mgr_defaults
-
-    - name: Set package manager variables to defaults if they are not defined
-      ansible.builtin.set_fact:
-        "{{ key_item }}": "{{ vars[key_item]
-                              | default( pkg_mgr_defaults[key_item] ) }}"
-      loop: "{{ pkg_mgr_defaults.keys() | list }}"
-      loop_control:
-        loop_var: key_item
-
-- name: Define a list of repositories
-  ansible.builtin.set_fact:
-    repo_list: "{{ repo_list | default([]) | union( [repo_var] ) }}"
-  vars:
-    repo_var: >-
-      {{  [ { 'repo': repo_item['key'] },
-            repo_defaults | default({}, true),
-            pkg_mgr_repo_defaults[pkg_mgr_name_item] | default({}, true),
-            dist_repo_defaults[pkg_mgr_name_item] | default({}, true),
-            repo_item['value'] | default({}, true) ]
-          | combine }}
-  loop: "{{ repos[pkg_mgr_name_item] | dict2items }}"
-  loop_control:
-    loop_var: repo_item
 
 - name: Run tasks to configure the package manager specifically
   ansible.builtin.include_tasks: "{{ tasks_file_var }}"
   vars:
-    tasks_file_var: "tasks/cfg_sw_ssh_pkg-mgr_{{ pkg_mgr_name_item }}.yml"
+    tasks_file_var: "tasks/\
+      cfg_sw_ssh_pkg-mgr_{{ pkg_mgr_name_item }}{{ tasks_file_suffix }}.yml"
   when: lookup('ansible.builtin.fileglob', tasks_file_var) != []
 
-- name: Run tasks to template the package manager configuration file
-  ansible.builtin.include_tasks: template_ssh.yml
+- name: Run tasks to configure the package manager's main config file
+  ansible.builtin.include_tasks:
+    file: "cfg_sw_ssh_pkg-mgr_template{{ tasks_file_suffix }}.yml"
   vars:
     cfg_file_var: "{{ pkg_mgr_var['cfg_file'] }}"
     title_var: >-
@@ -59,8 +33,9 @@
       {{ pkg_mgr_name_item | regex_replace('^yum$', 'dnf') }}_cfg.j2
   when: cfg_file_var is defined
 
-- name: Run tasks to template the repositories config file
-  ansible.builtin.include_tasks: template_ssh.yml
+- name: Run tasks to template a single configuration file for all repositories
+  ansible.builtin.include_tasks:
+    file: "cfg_sw_ssh_pkg-mgr_template{{ tasks_file_suffix }}.yml"
   vars:
     cfg_file_var: "{{ pkg_mgr_var['repos_cfg_file'] }}"
     title_var: >-
@@ -69,75 +44,9 @@
   when: cfg_file_var is defined
 
 - name: Repositories are configured in separate configuration files
+  ansible.builtin.include_tasks:
+    file: "cfg_sw_ssh_pkg-mgr_repos{{ tasks_file_suffix }}.yml"
   vars:
     repos_cfg_dir_var: "{{ pkg_mgr_var['repos_cfg_dir'] }}"
     ext_var: ".{{ pkg_mgr_var['repos_cfg_ext'] | default(omit, true) }}"
   when: repos_cfg_dir_var is defined
-  block:
-
-    - name: >-
-        List configuration files currently in repositories configuration
-        directory
-      ansible.builtin.raw: >-
-        {{ ansible_become_method | default }} ls -1
-        {{ repos_cfg_dir_var | quote }}
-      register: repo_cfg_files_reg
-      changed_when: false
-
-    - name: >-
-        Rename repository configuration files that don't correspond to the
-        repos dictionary
-      vars:
-        rename_files_var: >-
-          {{  repo_cfg_files_reg['stdout_lines']
-              | map('basename')
-              | select('match', ".*{{ ext_var | default | regex_escape }}$")
-              | difference( repos.keys()
-                            | list
-                            | product( [ ext_var | default ] )
-                            | map('join') ) }}
-      when: rename_files_var != []
-      block:
-
-        - name: >-
-            Append date suffix to repo files that don't correspond to the repos
-            dictionary
-          ansible.builtin.raw: >-
-            {{ ansible_become_method | default }} mv
-            {{ rename_file_path_var | quote }}
-            {{ rename_file_path_var | quote }}".$(date +%Y%m%d%H%M%S)~"
-          vars:
-            rename_file_path_var: >-
-              {{ repos_cfg_dir_var }}/{{ rename_file_item}}
-          when: not ansible_check_mode
-          loop: "{{ rename_files_var }}"
-          loop_control:
-            loop_var: rename_file_item
-
-        - name: The previous task would have resulted in a change (check mode)
-          ansible.builtin.debug:
-            msg: >-
-              {{ rename_files_var | length }} repository configuration files
-              would have been renamed.
-          changed_when: true
-          when: ansible_check_mode
-
-    - name: Run tasks to template the each repository config file
-      ansible.builtin.include_tasks: template_ssh.yml
-      vars:
-        cfg_file_var: >-
-          {{ repos_cfg_dir_var }}/{{ repo_item['repo'] }}{{ ext_var
-                                                            | default }}
-        title_var: >-
-          {{ pkg_mgr_name_pretty_var }} {{ repo_item['repo'] }}
-          Repository Configuration
-        template_file_var: >-
-          {{ pkg_mgr_name_item | regex_replace('^yum$', 'dnf') }}_repo_cfg.j2
-      loop: "{{ repo_list }}"
-      loop_control:
-        loop_var: repo_item
-
-- name: Define a list of the package manager configured on the system
-  ansible.builtin.set_fact:
-    cfg_pkg_mgrs: >-
-      {{ cfg_pkg_mgrs | default([]) | union( [pkg_mgr_var] ) }}

@@ -10,4 +10,5 @@
   ansible.builtin.include_tasks:
     file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
                       'tasks',
-                      prefix='cfg_sw_' ) }}"
+                      prefix='cfg_sw_'
+                      skip=true ) }}"

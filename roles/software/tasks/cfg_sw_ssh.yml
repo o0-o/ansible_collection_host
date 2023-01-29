@@ -5,22 +5,9 @@
 #
 ########################################################################
 
-- name: Run tasks to define the system
-  ansible.builtin.include_tasks: def_sys_ssh.yml
-  when: sys is undefined
-
-- name: Define system software defaults
-  ansible.builtin.include_vars:
-    file: "defaults/{{ linux_os_release['ID'] | default(sys) }}.yml"
-    name: sys_sw_defaults
-
-- name: Set system software variables to defaults if they are not defined
-  ansible.builtin.set_fact:
-    "{{ key_item }}": "{{ vars[key_item]
-                          | default( sys_sw_defaults[key_item] ) }}"
-  loop: "{{ sys_sw_defaults.keys() | list }}"
-  loop_control:
-    loop_var: key_item
+- name: Run tasks to define the system software
+  ansible.builtin.include_tasks:
+    file: "def_sw_sys_ssh{{ tasks_file_suffix }}.yml"
 
 # Package managers may fail to check for updates if time is skewed
 - name: Run the o0_o.host.time role to synchronize time with localhost
@@ -31,7 +18,7 @@
 - name: Run tasks to configure software based on the system if necessary
   ansible.builtin.include_tasks: "{{ tasks_file_var }}"
   vars:
-    tasks_file_var: "tasks/cfg_sw_ssh_{{ sys }}.yml"
+    tasks_file_var: "tasks/cfg_sw_ssh_{{ sys }}{{ tasks_file_suffix }}.yml"
   when: lookup('ansible.builtin.fileglob', tasks_file_var) != []
 
 - name: Run tasks to configure each package manager

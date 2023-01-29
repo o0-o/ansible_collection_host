@@ -5,6 +5,9 @@
 #
 ########################################################################
 
+tasks_file_suffix: "{{  ( ansible_facts == {} | default({}) )
+                        |ternary('_raw', '') }}"
+
 pkg_mgrs:
 
   aptitude:
@@ -136,4 +139,3 @@ pkg_mgrs:
     upgrade_arg: update
     upgrade_opts:
       - --assumeyes
-      - -u
