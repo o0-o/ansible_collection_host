@@ -1,0 +1,17 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Gather facts on a Linux host using the raw module
+#
+########################################################################
+
+- name: Get the contents of /etc/os-release to determine the OS of the host
+  ansible.builtin.raw: cat /etc/os-release
+  register: os_release_reg
+  changed_when: false
+
+- name: Define os-release values as a dictionary
+  ansible.builtin.set_fact:
+    linux_os_release: "{{ dict( os_release_reg['stdout_lines']
+                                | select('match', '^\\w+=.*$')
+                                | map('regex_replace', '\"', '')

@@ -1,0 +1,12 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Facts variables
+#
+########################################################################
+
+root_grps:
+  darwin: wheel
+  freebsd: wheel
+  linux: root
+  openbsd: wheel

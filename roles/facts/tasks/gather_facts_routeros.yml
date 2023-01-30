@@ -1,0 +1,25 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Gather facts on a RouterOS host
+#
+########################################################################
+
+- name: Gather facts (RouterOS)
+  community.routeros.facts:
+    gather_subset:
+      - routing
+      - interfaces
+      - hardware
+      - default
+
+- name: Get software ID (RouterOS)
+  community.routeros.command:
+    commands:
+      - put [/system license get software-id]
+  changed_when: false
+  register: ros_soft_id_reg
+
+- name: Define software ID (RouterOS)
+  ansible.builtin.set_fact:
+    ros_soft_id: "{{ ros_soft_id_reg['stdout_lines'][0][0] }}"

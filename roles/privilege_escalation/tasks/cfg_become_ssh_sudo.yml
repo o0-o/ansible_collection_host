@@ -12,22 +12,26 @@
     mode: "{{ sudo_cfg_subdir_mode }}"
   become: "{{ become_var }}"
 
-# The character prefix for includedir in sudoers may be # or @ so we use
-# both. This is the approach used by Debian, so we assume it's vetted.
+# Use @ include prefix beginning with version 1.9.1
+# https://github.com/sudo-project/sudo/releases/tag/SUDO_1_9_1
+- name: Get the sudo version
+  ansible.builtin.raw: sudo --version
+  changed_when: false
+  register: sudo_vers_reg
+
 - name: Configure sudoers.d inclusion in sudoers
   ansible.builtin.lineinfile:
     path: "{{ sudo_cfg_path }}/{{ sudo_cfg_file }}"
     line: >-
-      {{ incl_pfx_item }}includedir {{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}
+      {{ incl_pfx_var }}includedir {{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}
     state: present
     backup: true
     validate: "{{ visudo_bin }} -cf %s"
   become: "{{ become_var }}"
-  loop:
-    - '@'
-    - '#'
-  loop_control:
-    loop_var: incl_pfx_item
+  vars:
+    sudo_vers_var: "{{ sudo_vers_reg['stdout_lines'][0] | split(' ') | last }}"
+    incl_pfx_var: "{{ ( sudo_vers_var is version('1.9.1', '>=') )
+                      | ternary('@', '#') }}"
 
 # Discover and configure the mandatory access control system in place
 # (if any). This is required to properly configure sudo and SELinux.

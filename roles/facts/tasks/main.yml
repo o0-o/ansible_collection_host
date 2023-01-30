@@ -1,0 +1,14 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Gather facts
+#
+########################################################################
+
+- name: Run tasks to gather facts based on connection type or network OS
+  ansible.builtin.include_tasks: >-
+    gather_facts_{{ ansible_network_os
+                    | default(ansible_connection)
+                    | lower
+                    | split('.')
+                    | last }}.yml

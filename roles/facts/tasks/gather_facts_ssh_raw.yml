@@ -1,0 +1,30 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Gather facts on an SSH host using the raw module
+#
+########################################################################
+
+- name: Run uname to get system attributes
+  ansible.builtin.raw: "uname -{{ uname_opt_item }}"
+  register: uname_reg
+  changed_when: false
+  loop:
+    - s
+    - r
+    - m
+  loop_control:
+    loop_var: uname_opt_item
+
+# Use sys variables here instead of manually setting ansible_system, etc
+# as we don't want to manually set gathered facts because set_fact will
+# take precedence over facts gathered later using the setup module.
+- name: Define the system attributes based on uname output
+  ansible.builtin.set_fact:
+    sys: "{{ uname_reg['results'][0]['stdout_lines'][0] }}"
+    sys_release: "{{ uname_reg['results'][1]['stdout_lines'][0] }}"
+    sys_arch: "{{ uname_reg['results'][2]['stdout_lines'][0] }}"
+
+- name: Run tasks to define the Linux distribution
+  ansible.builtin.include_tasks: def_sw_sys_ssh_raw_linux.yml
+  when: sys == 'linux'
