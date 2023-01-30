@@ -46,6 +46,11 @@ Versions 2.11+
 ### Roles
 
 - `connection`
+- `privilege_escalation`
+- `time`
+- `software`
+- `python_interpreter`
+- `facts`
 
 ## Using this collection
 
@@ -97,6 +102,11 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 - Initially created the collection.
 - `first_found_by_host_attributes` lookup plugin added.
 - `connection` role added.
+- `privilege_escalation` role added.
+- `time` role added.
+- `software` role added.
+- `facts` role added.
+- `python_interpreter` role added.
 
 ## Roadmap
 
@@ -107,10 +117,10 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 
 ### Roles
 - ~~Connection~~
-- Privilege escalation
-- Time
-- Python interpreter
-- Facts
+- ~~Privilege escalation~~
+- ~~Time~~
+- ~~Python interpreter~~
+- ~~Facts~~
 - Mandatory access control (MAC)
 - Ansible user
 - Time zone
@@ -125,8 +135,7 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
   - OpenBSD
   - macOS
   - RouterOS
-- Repository
-- Updates
+- ~~Software~~
 - Antivirus
 - Auditing
 - Intrusion detection
