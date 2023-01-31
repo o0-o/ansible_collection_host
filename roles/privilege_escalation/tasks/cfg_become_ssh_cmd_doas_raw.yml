@@ -1,0 +1,12 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure doas as the become method using the raw module
+#
+########################################################################
+
+# doas -L is an inocuous command that should work for any user as long
+# as doas is present.
+- name: doas is present and appears to be functional (raw)
+  ansible.builtin.raw: doas -L
+  changed_when: false

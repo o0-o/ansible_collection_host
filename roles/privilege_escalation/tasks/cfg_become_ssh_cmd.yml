@@ -5,29 +5,14 @@
 #
 ########################################################################
 
-# Some minimal systems only have which while others only have command,
-# so we try both.
-- name: The Ansible become method is available
-  ansible.builtin.raw: >
-    which {{ ansible_become_method }} ||
-    command -v {{ ansible_become_method }}
-  changed_when: false
-
-# Only run configuration tasks if Python is available. If Python is
-# installed later by the o0_o.host.python_interpreter role, it will run
-# this role again to include these taks.
 - name: "Run tasks to Configure {{ ansible_become_method }}"
   ansible.builtin.include_tasks: >-
-    cfg_become_ssh_{{ ansible_become_method }}.yml
+    cfg_become_ssh_cmd_{{ ansible_become_method }}{{ tasks_file_suffix }}.yml
   vars:
     become_var: "{{ ansible_user != 'root' }}"
-  when: >-
-    ansible_python_interpreter
-    | default(discovered_interpreter_python)
-    is defined
 
-# Cannot use ansible_user: user_var because it will create an infinite
-# loop when user_var already equals ansible_user.
+# Adding a new Ansible user is not supported while limited to the raw
+# module.
 - name: "Run tasks to test {{ ansible_become_method }} with new user"
   ansible.builtin.include_tasks: test_become_ssh.yml
   vars:
@@ -35,7 +20,7 @@
   when: new_ansible_user_var is defined
 
 - name: "Run tasks to test {{ ansible_become_method }} with current user"
-  ansible.builtin.include_tasks: test_become_ssh.yml
+  ansible.builtin.include_tasks: test_become_ssh{{ tasks_file_suffix }}.yml
   when: new_ansible_user_var is undefined
 
 - name: "Scope {{ ansible_become_method }} for general use"

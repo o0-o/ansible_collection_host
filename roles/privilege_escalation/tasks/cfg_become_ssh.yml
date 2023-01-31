@@ -5,12 +5,6 @@
 #
 ########################################################################
 
-- name: Define platform-specific become variables
-  ansible.builtin.include_vars:
-    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
-                      'vars',
-                      skip=true ) }}"
-
 - name: Configure Ansible become method
   block:
 
@@ -46,13 +40,17 @@
 
   rescue:
 
+    - name: The current Ansible user is root
+      ansible.builtin.assert:
+        that: ansible_user == 'root'
+        quiet: true
+
     # Attempt to install sudo as a last resort. This is only possible if
     # ansible_user=root and new_ansible_user_var is defined.
     - name: Install sudo
       ansible.builtin.package:
         name: sudo
         state: present
-      become: true
 
     - name: Run tasks to configure sudo
       ansible.builtin.include_tasks: cfg_become_ssh_cmd.yml

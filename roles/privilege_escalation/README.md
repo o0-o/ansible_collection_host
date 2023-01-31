@@ -1,6 +1,6 @@
 # Privilege escalation
 
-Configure privilege escalation for the Ansible user and write the become method to the host's host_vars inventory file.
+Configure privilege escalation for a specified user (the Ansible user by default), and write the become method to the host's host_vars inventory file.
 
 ## Requirements
 
@@ -26,7 +26,6 @@ See `vars/` for platform-specific overrides of the variables below which are set
 doas_cfg_path: /etc
 doas_cfg_file: doas.conf
 doas_cfg_mode: 0600
-doas_bin: /usr/bin/doas
 ```
 
 #### `sudo`
@@ -37,22 +36,18 @@ sudo_cfg_file: sudoers
 sudo_cfg_subdir: sudoers.d
 sudo_cfg_subdir_mode: 0750
 sudo_cfg_subdir_file_mode: 0440
-sudo_bin: /usr/bin/sudo
 visudo_bin: /usr/sbin/visudo
-```
-
-#### SELinux
-
-```yaml
-adm_seuser: staff_u
 ```
 
 ## Dependencies
 
 - `o0_o.inventory`
+- `o0_o.host.connection`
+- `o0_o.host.facts`
+- `o0_o.host.mandatory_access_control`
 - `community.general`*
 
-\* Not technically required unless SELinux is in use.
+\* Required for doas and SELinux support.
 
 ## Example Playbook
 

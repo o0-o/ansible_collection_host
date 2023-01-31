@@ -7,5 +7,4 @@
 
 doas_cfg_path: /usr/local/etc
 sudo_cfg_path: /usr/local/etc
-sudo_bin: /usr/local/bin/sudo
 visudo_bin: /usr/local/sbin/visudo

@@ -20,7 +20,6 @@ sudo_cfg_file: sudoers
 sudo_cfg_subdir: sudoers.d
 sudo_cfg_subdir_mode: 0750
 sudo_cfg_subdir_file_mode: 0440
-sudo_bin: /usr/bin/sudo
 visudo_bin: /usr/sbin/visudo
 
 # selinux

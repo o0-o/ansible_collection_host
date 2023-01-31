@@ -5,6 +5,14 @@
 #
 ########################################################################
 
+- name: sudo is present and appears to be functional
+  ansible.builtin.command:
+    argv:
+      - sudo
+      - --version
+  changed_when: false
+  register: sudo_vers_reg
+
 - name: Create sudoers.d subdirectory
   ansible.builtin.file:
     path: "{{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}"
@@ -14,30 +22,28 @@
 
 # Use @ include prefix beginning with version 1.9.1
 # https://github.com/sudo-project/sudo/releases/tag/SUDO_1_9_1
-- name: Get the sudo version
-  ansible.builtin.raw: sudo --version
-  changed_when: false
-  register: sudo_vers_reg
-
 - name: Configure sudoers.d inclusion in sudoers
   ansible.builtin.lineinfile:
     path: "{{ sudo_cfg_path }}/{{ sudo_cfg_file }}"
     line: >-
-      {{ incl_pfx_var }}includedir {{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}
+      {{ sudo_incl_pfx_var }}includedir
+      {{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}
     state: present
     backup: true
     validate: "{{ visudo_bin }} -cf %s"
   become: "{{ become_var }}"
   vars:
     sudo_vers_var: "{{ sudo_vers_reg['stdout_lines'][0] | split(' ') | last }}"
-    incl_pfx_var: "{{ ( sudo_vers_var is version('1.9.1', '>=') )
-                      | ternary('@', '#') }}"
+    sudo_incl_pfx_var: "{{  ( sudo_vers_var is version('1.9.1', '>=') )
+                            | ternary('@', '#') }}"
 
 # Discover and configure the mandatory access control system in place
 # (if any). This is required to properly configure sudo and SELinux.
 - name: Run the mandatory access control role
   ansible.builtin.include_role:
     name: o0_o.host.mandatory_access_control
+    allow_duplicates: false
+    public: true
   when: mac is undefined
 
 - name: Try to configure the user with SELinux context
@@ -56,7 +62,7 @@
         name: o0_o.host.mandatory_access_control
 
     - name: Run tasks to configure the Ansible user with SELinux context
-      ansible.builtin.include_tasks: cfg_become_ssh_sudo_user_selinux.yml
+      ansible.builtin.include_tasks: cfg_become_ssh_cmd_sudo_selinux.yml
 
 - name: Configure user with passwordless sudo privileges
   ansible.builtin.lineinfile:

@@ -5,5 +5,4 @@
 #
 ########################################################################
 
-sudo_bin: /usr/local/bin/sudo
 visudo_bin: /usr/local/sbin/visudo
