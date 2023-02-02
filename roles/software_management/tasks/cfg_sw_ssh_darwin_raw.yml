@@ -23,7 +23,7 @@
 
   rescue:
 
-    # This prevents manual GUI intervention
+    # This prevents manual GUI intervention.
     - name: Create a temporary file for softwareupdate (macOS)
       ansible.builtin.raw: "touch {{ cli_tools_tmp_file_var | quote }}"
       when: not ansible_check_mode
@@ -72,6 +72,6 @@
 - name: Confirm that Python is available
   ansible.builtin.ping:
 
-- name: Python is available now, so don't fallback to raw module
+- name: Python is available now, so don't fallback to raw module anymore
   ansible.builtin.set_fact:
     tasks_file_suffix: ''

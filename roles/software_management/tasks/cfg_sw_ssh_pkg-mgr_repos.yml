@@ -4,7 +4,7 @@
 # Configure repositories on an SSH host
 #
 # These tasks will configure repositories in separate configuration
-# files as in the case of RHEL distributions.
+# files as in the case of DNF.
 #
 ########################################################################
 
@@ -14,28 +14,22 @@
     argv:
       - ls
       - -1
-      - {{ repos_cfg_dir_var | quote }}
+      - "{{ repos_cfg_dir_var | quote }}"
   become: true
   register: repo_cfg_files_reg
   changed_when: false
 
 - name: There are extraneous repository configuration files
-  vars:
-    extra_files_var: >-
-      {{  repo_cfg_files_reg['stdout_lines']
-          | map('basename')
-          | select('match', ".*{{ ext_var | default | regex_escape }}$")
-          | difference( repos.keys()
-                        | list
-                        | product( [ ext_var | default ] )
-                        | map('join') ) }}
   when: extra_files_var != []
+  notify: "{{ notify_var }}"
   block:
 
+    # Write an empty string to the extraneous repository config file
+    # to take advantage of the builtin backup behavior.
     - name: Backup extraneous repository configuration files
       ansible.builtin.copy:
-        content:
-        dest: "{{ extra_file_item }}"
+        content: ''
+        dest: "{{ extra_file_path_var }}"
         mode: 0644
         owner: root
         group: "{{ root_grp }}"
@@ -45,9 +39,10 @@
       loop_control:
         loop_var: extra_file_item
 
+    # Delete the empty file left by the previous task.
     - name: Delete extraneous repository configuration files
       ansible.builtin.file:
-        path: "{{ extra_file_item }}"
+        path: "{{ extra_file_path_var }}"
         state: absent
       become: true
       loop: "{{ extra_files_var }}"

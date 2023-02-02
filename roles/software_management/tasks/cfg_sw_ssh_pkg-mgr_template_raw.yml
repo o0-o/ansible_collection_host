@@ -7,7 +7,7 @@
 #
 ########################################################################
 
-- name: Get the contents of the configuration file
+- name: Get the contents of the configuration file (raw)
   ansible.builtin.raw: >-
     {{ ansible_become_method | default }}
     cat {{ cfg_file_var | quote }}
@@ -18,8 +18,7 @@
 - name: The configuration file needs to be modified
   vars:
     cfg_template_var: >-
-      {{  lookup( 'ansible.builtin.template',
-                  "{{ template_file_var }}") }}
+      {{ lookup('ansible.builtin.template', template_file_var) }}
   when: cfg_file_reg['stdout_lines'] != cfg_template_var.splitlines()
   notify: "{{ notify_var }}"
   block:
@@ -28,7 +27,7 @@
       when: cfg_file_reg['rc'] == 0
       block:
 
-          - name: Back up the configuration file
+          - name: Back up the configuration file (raw)
             ansible.builtin.raw: >-
               {{ ansible_become_method | default }}
               cp -a "{{ cfg_file_var | quote }}"
@@ -42,7 +41,7 @@
             changed_when: true
             when: ansible_check_mode
 
-    - name: Write the template to the configuration file
+    - name: Write the template to the configuration file (raw)
       ansible.builtin.raw: >-
         {{ ansible_become_method | default }} sh -c {{ cmd_var | quote }}
       vars:
@@ -57,7 +56,7 @@
       changed_when: true
       when: ansible_check_mode
 
-    - name: Define a list of package managers with configuration changes
+    - name: Define a list of package managers with configuration changes (raw)
       ansible.builtin.set_fact:
-        cfg_pkg_mgrs: >-
-          {{ cfg_pkg_mgrs | default([]) | union( [pkg_mgr_var] ) }}
+        cfg_pkg_mgr_names: >-
+          {{ cfg_pkg_mgr_names | default([]) | union( [pkg_mgr_name_item] ) }}

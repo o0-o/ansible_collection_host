@@ -9,7 +9,13 @@ YUM or DNF repository configuration file
 {% if repo_item['method'] == 'baseurl' %}
 baseurl={{ repo_item['url'] }}{{ repo_item['url_path'] }}
 {% elif repo_item['method'] == 'mirrorlist' %}
-mirrorlist={{ repo_item['url'] }}/{{ ( pkg_mgr_name_item == 'dnf' ) | ternary('mirrorlist', '' ) }}?{{ repo_item['url_vars'] }}
+mirrorlist={{ [ repo_item['url'],
+                '/',
+                ( pkg_mgr_name_item == 'dnf' )
+                | ternary('mirrorlist', '' ),
+                '?',
+                repo_item['url_vars'] ]
+              | join }}
 {% else %}
 metalink={{ repo_item['url'] }}/metalink?{{ repo_item['url_vars'] }}
 {% endif %}

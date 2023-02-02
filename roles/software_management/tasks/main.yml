@@ -1,0 +1,11 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure the software management on a host
+#
+########################################################################
+
+# Skip on network systems with no software management systems.
+- name: Run tasks to configure software management on the host
+  ansible.builtin.include_tasks: cfg_sw_ssh.yml
+  when: ansible_connection == 'ssh'

@@ -1,0 +1,54 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Initialize the package manager
+#
+########################################################################
+
+- name: Initialize the package manager cache
+  ansible.builtin.command:
+    argv: "{{ [ pkg_mgr_var['init_cmd'] | default( pkg_mgr_var['cmd'] ),
+                pkg_mgr_var['init_arg'] | default ]
+              + pkg_mgr_var['init_opts'] | default([]) }}"
+  become: true
+  when: >-
+    pkg_mgr_var['init_cmd'] is defined
+    or pkg_mgr_var['init_arg'] is defined
+    or pkg_mgr_var['init_opts'] is defined
+
+- name: Set up GPG keys for the package manager
+  ansible.builtin.command:
+    argv: "{{ [ pkg_mgr_var['key_cmd'] | default( pkg_mgr_var['cmd'] ),
+                pkg_mgr_var['key_arg'] | default ]
+              + pkg_mgr_var['key_opts'] | default([]) }}"
+  become: true
+  when: >-
+    pkg_mgr_var['key_cmd'] is defined
+    or pkg_mgr_var['key_arg'] is defined
+    or pkg_mgr_var['key_opts'] is defined
+
+- name: Clean the package manager cache
+  ansible.builtin.command:
+    argv: "{{ [ pkg_mgr_var['clean_cmd'] | default( pkg_mgr_var['cmd'] ),
+                pkg_mgr_var['clean_arg'] | default ]
+              + pkg_mgr_var['clean_opts'] | default([]) }}"
+  become: true
+  when: >-
+    pkg_mgr_var['clean_cmd'] is defined
+    or pkg_mgr_var['clean_arg'] is defined
+    or pkg_mgr_var['clean_opts'] is defined
+
+- name: Update the package manager cache
+  ansible.builtin.command:
+    argv: "{{ [ pkg_mgr_var['update_cmd'] | default( pkg_mgr_var['cmd'] ),
+                pkg_mgr_var['update_arg'] | default ]
+              + pkg_mgr_var['update_opts'] | default([]) }}"
+  become: true
+  register: up_pm_cache_reg
+  failed_when: >-
+    up_pm_cache_reg['rc'] not in  pkg_mgr_var['update_success_codes']
+                                  | default([0])
+  when: >-
+    pkg_mgr_var['update_cmd'] is defined
+    or pkg_mgr_var['update_arg'] is defined
+    or pkg_mgr_var['update_opts'] is defined

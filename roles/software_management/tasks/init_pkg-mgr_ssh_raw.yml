@@ -1,0 +1,102 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Initialize the package manager using the raw module
+#
+########################################################################
+
+- name: Initialize
+  when: >-
+    pkg_mgr_var['init_cmd'] is defined
+    or pkg_mgr_var['init_arg'] is defined
+    or pkg_mgr_var['init_opts'] is defined
+  block:
+
+    - name: Initialize the package manager cache (raw)
+      ansible.builtin.raw: >-
+        {{ ansible_become_method | default }}
+        {{ pkg_mgr_var['init_cmd'] | default( pkg_mgr_var['cmd'] ) }}
+        {{ pkg_mgr_var['init_arg'] | default }}
+        {{ pkg_mgr_var['init_opts'] | default([]) | join(' ') }}
+      when: not ansible_check_mode
+
+    - name: The previous task would have resulted in a change (check mode)
+      ansible.builtin.debug:
+        msg: >-
+          The {{ pkg_mgr_var['cmd'] }} package manager would have been
+          initialized.
+      changed_when: true
+      when: ansible_check_mode
+
+- name: GPG keys
+  when: >-
+    pkg_mgr_var['key_cmd'] is defined
+    or pkg_mgr_var['key_arg'] is defined
+    or pkg_mgr_var['key_opts'] is defined
+  block:
+
+    - name: Set up GPG keys for the package manager (raw)
+      ansible.builtin.raw: >-
+        {{ ansible_become_method | default }}
+        {{ pkg_mgr_var['key_cmd'] | default( pkg_mgr_var['cmd'] ) }}
+        {{ pkg_mgr_var['key_arg'] | default }}
+        {{ pkg_mgr_var['key_opts'] | default([]) | join(' ') }}
+      when: not ansible_check_mode
+
+    - name: The previous task would have resulted in a change (check mode)
+      ansible.builtin.debug:
+        msg: >-
+          The {{ pkg_mgr_var['cmd'] }} package manager would have configured
+          its GPG keys.
+      changed_when: true
+      when: ansible_check_mode
+
+- name: Clean
+  when: >-
+    pkg_mgr_var['clean_cmd'] is defined
+    or pkg_mgr_var['clean_arg'] is defined
+    or pkg_mgr_var['clean_opts'] is defined
+  block:
+
+    - name: Clean the package manager cache (raw)
+      ansible.builtin.raw: >-
+        {{ ansible_become_method | default }}
+        {{ pkg_mgr_var['clean_cmd'] | default( pkg_mgr_var['cmd'] ) }}
+        {{ pkg_mgr_var['clean_arg'] | default }}
+        {{ pkg_mgr_var['clean_opts'] | default([]) | join(' ') }}
+      when: not ansible_check_mode
+
+    - name: The previous task would have resulted in a change (check mode)
+      ansible.builtin.debug:
+        msg: >-
+          The {{ pkg_mgr_var['cmd'] }} package manager would have run its
+          clean command.
+      changed_when: true
+      when: ansible_check_mode
+
+- name: Update
+  when: >-
+    pkg_mgr_var['update_cmd'] is defined
+    or pkg_mgr_var['update_arg'] is defined
+    or pkg_mgr_var['update_opts'] is defined
+  block:
+
+    - name: Update the package manager cache (raw)
+      ansible.builtin.raw: >-
+        {{ ansible_become_method | default }}
+        {{ pkg_mgr_var['update_cmd'] | default( pkg_mgr_var['cmd'] ) }}
+        {{ pkg_mgr_var['update_arg'] | default }}
+        {{ pkg_mgr_var['update_opts'] | default([]) | join(' ') }}
+      register: up_pm_cache_reg
+      failed_when: >-
+        up_pm_cache_reg['rc'] not in  pkg_mgr_var['update_success_codes']
+                                      | default([0])
+      when: not ansible_check_mode
+
+    - name: The previous task would have resulted in a change (check mode)
+      ansible.builtin.debug:
+        msg: >-
+          The {{ pkg_mgr_var['cmd'] }} package manager would have checked
+          for updates.
+      changed_when: true
+      when: ansible_check_mode

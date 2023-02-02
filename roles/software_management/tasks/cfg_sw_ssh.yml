@@ -1,0 +1,62 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure basic software management on an SSH host
+#
+########################################################################
+
+- name: Run tasks to satisfy role dependencies
+  ansible.builtin.include_tasks: cfg_sw_ssh_deps.yml
+
+# Currently this only applies to macOS where Xcode must be installed.
+- name: Run tasks to configure software based on the system if necessary
+  ansible.builtin.include_tasks: "{{ tasks_file_var }}"
+  vars:
+    tasks_file_var: >-
+      tasks/cfg_sw_ssh_{{ ansible_system
+                          | default(sys)
+                          | lower }}{{ tasks_file_suffix }}.yml
+  when: lookup('ansible.builtin.fileglob', tasks_file_var) != []
+
+- name: Run tasks to configure each package manager
+  ansible.builtin.include_tasks: cfg_sw_ssh_pkg-mgr.yml
+  vars:
+    repos_var: "{{ repos[os_name] | default({}) }}"
+    pkg_mgr_var: "{{ pkg_mgmt[pkg_mgr_name_item] }}"
+    pkg_mgr_name_pretty_var: >-
+      {{  ( pkg_mgr_name_item in ['yum', 'dnf'] )
+          | ternary(  pkg_mgr_name_item | upper,
+                      pkg_mgr_name_item | title ) }}
+    header_var: "\
+      {{  ( title_var + '\n \n' + default_comment_header )
+          | wordwrap(70)
+          | comment(  prefix=default_comment_prefix,
+                      postfix=default_comment_postfix ) }}"
+    notify_var: initialize package manager
+  loop: "{{ repos_var.keys() | list }}"
+  loop_control:
+    loop_var: pkg_mgr_name_item
+
+# Initialize package mangers if any configuration was changed.
+- name: Flush handers
+  ansible.builtin.meta: flush_handlers
+
+- name: Record completion of the software management configuration role
+  ansible.builtin.set_fact:
+    roles_completed: "{{  roles_completed
+                          | default([])
+                          | union( [ansible_role_name] ) }}"
+
+# Mandatory access control configuration for privilege escalation
+# may require that dependencies be installed. The
+# o0_o.host.privilege_escalation role will not perform that
+# configuration unless this role is included in the roles_completed
+# list. If a Python interpreter still needs to be configured or
+# installed, the o0_o.host.python_interpreter role will take care of
+# this later.
+- name: Finish configuring privilege escalation
+  ansible.builtin.include_role:
+    name: o0_o.host.privilege_escalation
+    allow_duplicates: true
+    public: true
+  when: tasks_file_suffix == ''

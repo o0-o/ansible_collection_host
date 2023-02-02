@@ -1,0 +1,232 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Software variables
+#
+########################################################################
+
+# Package manager configuration
+pkg_mgr_cfgs:
+  aptitude: "{{ apt_cfg | default({}, true) }}"
+  dnf: "{{  dnf_yum_common_cfg
+            | default({}, true)
+            | combine(dnf_cfg)
+            | default({}, true)}}"
+  freebsd_pkg: "{{ freebsd_pkg_cfg | default({}, true) }}"
+  #homebrew: # Don't support Homebrew custom configurations.
+  #openbsd_pkg: # OpenBSD PKG has no configuration file.
+  pacman: "{{ pacman_cfg | default({}, true) }}"
+  yum: "{{ yum_cfg | default({}, true) }}"
+
+# Package manager configuration by operating system
+os_pkg_mgr_cfgs:
+  archlinux:
+    pacman: "{{ archlinux_pacman_cfg | default({}, true) }}"
+  centos:
+    yum: "{{ centos_yum_cfg | default({}, true) }}"
+  #darwin: # Don't support macOS/Homebrew custom configurations.
+  debian:
+    aptitude: "{{ debian_apt_cfg | default({}, true) }}"
+  fedora:
+    dnf: "{{ fedora_dnf_cfg | default({}, true) }}"
+  #openbsd: # OpenBSD PKG has no configuration file.
+  rocky:
+    dnf: "{{ rocky_dnf_cfg | default({}, true) }}"
+  ubuntu:
+    aptitude: "{{ ubuntu_apt_cfg | default({}, true) }}"
+
+# Repositories configuration by package manager
+pkg_mgr_repos_cfgs:
+  aptitude: "{{ apt_repos_cfg | default({}, true) }}"
+  dnf: "{{ dnf_repos_cfg | default({}, true) }}"
+  freebsd_pkg: "{{ freebsd_pkg_repos_cfg | default({}, true) }}"
+  #homebrew: # Don't support Homebrew custom configurations.
+  #openbsd_pkg: # OpenBSD does not support multiple repositories.
+  pacman: "{{ pacman_repos_cfg | default({}, true) }}"
+  yum: "{{ yum_repos_cfg | default({}, true) }}"
+
+# Repositories configuration by operating system
+os_repos_cfgs:
+  archlinux:
+    pacman: "{{ archlinux_pacman_repos_cfg | default({}, true) }}"
+  centos:
+    yum: "{{ centos_yum_repos_cfg | default({}, true) }}"
+  #darwin: # Don't support macOS/Homebrew custom configurations.
+  debian:
+    aptitude: "{{ debian_apt_repos_cfg | default({}, true) }}"
+  fedora:
+    dnf: "{{ fedora_dnf_repos_cfg | default({}, true) }}"
+  #openbsd: # OpenBSD does not support multiple repositories.
+  rocky:
+    dnf: "{{ rocky_dnf_repos_cfg | default({}, true) }}"
+  ubuntu:
+    aptitude: "{{ ubuntu_apt_repos_cfg | default({}, true) }}"
+
+# Repositories
+repos:
+  archlinux:
+    pacman: "{{ archlinux_pacman_repos | default({}, true) }}"
+  centos:
+    yum: "{{ centos_yum_repos | default({}, true) }}"
+  darwin:
+    homebrew: "{{ darwin_homebrew_repos | default({}, true) }}"
+    macos: #No configuration is possible.
+  debian:
+    aptitude: "{{ debian_apt_repos | default({}, true) }}"
+  fedora:
+    dnf: "{{ fedora_dnf_repos | default({}, true) }}"
+  freebsd:
+    freebsd_pkg: "{{ freebsd_pkg_repos | default({}, true) }}"
+  openbsd:
+    openbsd_pkg:
+      openbsd_repo: "{{ openbsd_pkg_repo | default({}, true) }}"
+    openbsd_fw:
+      openbsd_fw_repo: "{{ openbsd_fw_repo | default({}, true) }}"
+  rocky:
+    dnf: "{{ rocky_dnf_repos | default({}, true) }}"
+  ubuntu:
+    aptitude: "{{ ubuntu_apt_repos | default({}, true) }}"
+
+# Software management configuration and commands
+pkg_mgmt:
+  aptitude:
+    cmd: apt-get
+    cfg_file: /etc/apt/apt.conf.d/90overrides
+    repos_cfg_file: /etc/apt/sources.list
+    clean_arg: clean
+    update_arg: update
+    update_opts:
+      - --assume-yes
+      - --quiet
+    install_arg: install
+    install_opts:
+      - --assume-yes
+      - --quiet
+    upgrade_arg: upgrade
+    upgrade_opts:
+      - --assume-yes
+      - --quiet
+  homebrew:
+    cmd: brew
+    clean_arg: cleanup
+    clean_opts:
+      - -s
+    update_arg: update
+    install_arg: install
+    upgrade_arg: upgrade
+  dnf:
+    cmd: dnf
+    cfg_file: /etc/dnf/dnf.conf
+    repos_cfg_dir: /etc/yum.repos.d
+    repos_cfg_ext: repo
+    clean_arg: clean
+    clean_opts:
+      - all
+    update_arg: check-update
+    update_opts:
+      - --assumeyes
+      - --debuglevel=1
+    update_success_codes:
+      - 0
+      - 100 #exits 100 if updates are available
+    install_arg: install
+    install_opts:
+      - --assumeyes
+    upgrade_arg: update
+    upgrade_opts:
+      - --assumeyes
+  freebsd_pkg:
+    cmd: pkg
+    cfg_file: /usr/local/etc/pkg.conf
+    repos_cfg_dir: /usr/local/etc/pkg/repos
+    repos_cfg_ext: conf
+    clean_arg: clean
+    clean_opts:
+      - -a
+    update_arg: update
+    update_opts:
+      - -f
+    install_arg: install
+    install_opts:
+      - --yes
+    upgrade_arg: upgrade
+    upgrade_opts:
+      - --yes
+  macos:
+    cmd: softwareupdate
+    update_opts:
+      - --list
+    upgrade_opts:
+      - --install
+      - --recommended
+  openbsd_pkg:
+    cmd: pkg_add
+    repos_cfg_file: /etc/installurl
+    clean_cmd: pkg_check
+    clean_opts:
+      - -F
+      - -f
+      - -I
+    update_opts:
+      - -s
+      - -I
+      - -u
+    install_opts:
+      - -z
+    upgrade_opts:
+      - -u
+  openbsd_fw:
+    cmd: fw_update
+    update_opts:
+      - -a
+      - -n
+      - "-p{{ repos['openbsd']['openbsd_fw']['openbsd_fw_repo']['url']
+              | default(omit, true) }}"
+    upgrade_opts:
+      - -a
+      - "-p{{ repos['openbsd']['openbsd_fw']['openbsd_fw_repo']['url']
+              | default(omit, true) }}"
+  pacman:
+    cmd: pacman
+    init_cmd: pacman-key
+    init_opts:
+      - --init
+    key_cmd: pacman-key
+    key_opts:
+      - --populate
+    cfg_file: /etc/pacman.conf
+    clean_opts:
+      - --sync
+      - --clean
+      - --noconfirm
+    update_opts:
+      - --sync
+      - --refresh
+      - --refresh
+    install_opts:
+      - --sync
+      - --noconfirm
+    upgrade_opts:
+      - --sysupgrade
+      - --noconfirm
+  yum:
+    cmd: yum
+    cfg_file: /etc/yum.conf
+    repos_cfg_dir: /etc/yum.repos.d
+    repos_cfg_ext: repo
+    clean_arg: clean
+    clean_opts:
+      - all
+    update_arg: check-update
+    update_opts:
+      - --assumeyes
+      - --debuglevel=1
+    update_success_codes:
+      - 0
+      - 100 #exits 100 if updates are available
+    install_arg: install
+    install_opts:
+      - --assumeyes
+    upgrade_arg: update
+    upgrade_opts:
+      - --assumeyes

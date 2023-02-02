@@ -5,12 +5,23 @@
 #
 ########################################################################
 
-- name: Run tasks to define the package manager
-  ansible.builtin.include_tasks: def_pkg-mgr_ssh.yml
+- name: Define a list of repositories
+  ansible.builtin.set_fact:
+    repo_list: "{{ repo_list | default([]) | union( [repo_var] ) }}"
   vars:
-    defaults_file_var: "defaults/{{ pkg_mgr_name_item }}.yml"
-  when: lookup('ansible.builtin.fileglob', defaults_file_var) != []
+    def_repo_precedent_list_var:
+      - repo: "{{ repo_item['key'] }}"
+      - "{{ repos_cfgs | default({}, true) }}"
+      - "{{ pkg_mgr_repos_cfgs[pkg_mgr_name_item] | default({}, true) }}"
+      - "{{ os_repos_cfgs[os_name][pkg_mgr_name_item]
+            | default({}, true) }}"
+      - "{{ repo_item['value'] | default({}, true) }}"
+    repo_var: "{{ def_repo_precedent_list_var | combine }}"
+  loop: "{{ repos[os_name][pkg_mgr_name_item] | dict2items }}"
+  loop_control:
+    loop_var: repo_item
 
+# Currently this only applies to macOS where Homebrew must be installed.
 - name: Run tasks to configure the package manager specifically
   ansible.builtin.include_tasks: "{{ tasks_file_var }}"
   vars:
@@ -26,13 +37,15 @@
     title_var: >-
       {{ pkg_mgr_name_pretty_var }} Package Manager Configuration
     pkg_mgr_cfg_var: >-
-      {{  [ pkg_mgr_cfg[pkg_mgr_name_item] | default({}),
-            dist_pkg_mgr_cfg[pkg_mgr_name_item] | default({}) ]
+      {{  [ pkg_mgr_cfgs[pkg_mgr_name_item] | default({}),
+            os_pkg_mgr_cfgs[pkg_mgr_name_item] | default({}) ]
           | combine }}
     template_file_var: >-
       {{ pkg_mgr_name_item | regex_replace('^yum$', 'dnf') }}_cfg.j2
   when: cfg_file_var is defined
 
+# Only runs if the package manager configures all repositories in a
+# single file (like Aptitude's sources.list).
 - name: Run tasks to template a single configuration file for all repositories
   ansible.builtin.include_tasks:
     file: "cfg_sw_ssh_pkg-mgr_template{{ tasks_file_suffix }}.yml"
@@ -43,10 +56,23 @@
     template_file_var: "{{ pkg_mgr_name_item }}_repos_cfg.j2"
   when: cfg_file_var is defined
 
-- name: Repositories are configured in separate configuration files
+# Only runs if the package manager configures repositories in separate
+# files (like DNF).
+- name: Run tasks to configure separate configuration files for each Repository
   ansible.builtin.include_tasks:
     file: "cfg_sw_ssh_pkg-mgr_repos{{ tasks_file_suffix }}.yml"
   vars:
     repos_cfg_dir_var: "{{ pkg_mgr_var['repos_cfg_dir'] }}"
     ext_var: ".{{ pkg_mgr_var['repos_cfg_ext'] | default(omit, true) }}"
+    extra_files_re_var: ".*{{ ext_var | default | regex_escape }}$"
+    extra_files_var: >-
+      {{  repo_cfg_files_reg['stdout_lines']
+          | map('basename')
+          | select('match', extra_files_re_var)
+          | difference( repos[os_name][pkg_mgr_name_item].keys()
+                        | list
+                        | product( [ ext_var | default ] )
+                        | map('join') ) }}
+    extra_file_path_var: >-
+      {{ repos_cfg_dir_var }}/{{ extra_file_item}}
   when: repos_cfg_dir_var is defined

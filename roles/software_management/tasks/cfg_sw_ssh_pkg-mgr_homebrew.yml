@@ -5,10 +5,6 @@
 #
 ########################################################################
 
-- name: Only support Homebrew on macOS
-  ansible.builtin.assert:
-    that: ansible_system | default(sys) | lower == 'darwin'
-
 - name: Gather facts so we can install Homebrew (using Xcode's Python)
   ansible.builtin.setup:
 
@@ -16,4 +12,7 @@
   ansible.builtin.include_role:
     name: geerlingguy.mac.homebrew
   vars:
-    homebrew_taps: ( repos_var | default({}, true) ).keys() | list
+    homebrew_taps: "{{  repo_list
+                        | selectattr('enabled', defined)
+                        | selectattr('enabled', '==', 'true')
+                        | map(attribute='repo') }}"

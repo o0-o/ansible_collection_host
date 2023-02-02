@@ -1,0 +1,291 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Software defaults
+#
+########################################################################
+
+# Updates
+auto_update:
+  type: security
+  freq: daily
+auto_reboot: true
+
+# Package manager configuration
+dnf_cfg:
+  best: 0
+  cacheonly: 0
+  countme: 0
+  fastestmirrror: 1
+  gpgkey_dns_verification: 0
+  install_weak_deps: 0
+  log_compress: 1
+  module_obsoletes: 1
+  sslverifystatus: 1
+dnf_yum_common_cfg:
+  autocheck_running_kernel: 1
+  check_config_file_age: 1
+  clean_requirements_on_remove: 1
+  debuglevel: 2
+  diskspacecheck: 1
+  gpgcheck: 1
+  installonly_limit: 3
+  ip_resolve: 4
+  keepcache: 0
+  localpkg_gpgcheck: 1
+  metadata_expire: 21600 #6 hours
+  obsoletes: 1
+  plugins: 1
+  repo_gpgcheck: 1
+  skip_if_unavailable: 0
+  sslverify: 1
+freebsd_pkg_cfg:
+  ALIAS:
+    all-depends: query %dn-%dv
+    annotations: info -A
+    build-depends: info -qd
+    cinfo: info -Cx
+    comment: 'query -i "%c"'
+    csearch: search -Cx
+    desc: 'query -i "%e"'
+    download: fetch
+    iinfo: info -ix
+    isearch: search -ix
+    prime-list: "query -e '%a = 0' '%n'"
+    prime-origins: "query -e '%a = 0' '%o'"
+    leaf: "query -e '%#r == 0' '%n-%v'"
+    list: info -ql
+    noauto: "query -e '%a == 0' '%n-%v'"
+    options: 'query -i "%n - %Ok: %Ov"'
+    origin: info -qo
+    orphans: version -vRl\?
+    provided-depends: info -qb
+    rall-depends: rquery %dn-%dv
+    raw: info -R
+    rcomment: 'rquery -i "%c"'
+    rdesc: 'rquery -i "%e"'
+    required-depends: info -qr
+    roptions: 'rquery -i "%n - %Ok: %Ov"'
+    shared-depends: info -qB
+    show: info -f -k
+    size: info -sq
+    unmaintained: "query -e '%m = \"ports@FreeBSD.org\"' '%o (%w)'"
+    runmaintained: "rquery -e '%m = \"ports@FreeBSD.org\"' '%o (%w)'"
+pacman_cfg:
+  HoldPkg:
+    - pacman
+    - glibc
+  Architecture: auto
+  CheckSpace:
+  SigLevel:
+    - Required
+    - DatabaseOptional
+  LocalFileSigLevel:
+    - Optional
+yum_cfg:
+  cachedir: /var/cache/yum/$basearch/$releasever
+  payload_gpgcheck: 1
+  skip_broken: 0
+  tolerant: 1
+
+# Package manager configuration by operating system
+centos_yum_cfg:
+  # The exactarch and distroverpkg parameters are not in the yum.conf
+  # documentation but they are in CentOS's yum.conf so we include them
+  # here along with CentOS's bug tracker.
+  exactarch: 1
+  bugtracker_url: "http://bugs.centos.org/set_project.php?\
+    project_id=23&\
+    ref=http://bugs.centos.org/bug_report_page.php?category=yum"
+  distroverpkg: centos-release
+fedora_dnf_cfg:
+  repo_gpgcheck: 0
+
+# Repository configuration
+repos_cfgs:
+  enabled: false
+
+# Repositories configuration by package manager
+apt_repos_cfg:
+  type: deb
+  updates: true
+  backports: false
+dnf_repos_cfg:
+  type: rpm
+
+# Repositories configuration by operating system
+archlinux_pacman_repos_cfg:
+  Server: https://geo.mirror.pkgbuild.com/$repo/os/$arch
+centos_yum_repos_cfg:
+  method: mirrorlist
+  url: http://mirrorlist.centos.org
+  gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+debian_apt_repos_cfg:
+  url: https://deb.debian.org/debian
+  security: true
+fedora_dnf_repos_cfg:
+  method: metalink
+  url: https://mirrors.fedoraproject.org
+  gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch
+rocky_dnf_repos_cfg:
+  method: mirrorlist
+  url: https://mirrors.rockylinux.org
+  gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+ubuntu_apt_repos_cfg:
+  url: https://mirrors.edge.kernel.org/ubuntu
+  security: false
+
+# Repositories
+archlinux_pacman_repos:
+  community:
+    enabled: true
+  community-testing:
+  core:
+    enabled: true
+  extra:
+    enabled: true
+  multilib:
+  multilib-testing:
+  testing:
+centos_yum_repos:
+  base:
+    name: CentOS-$releasever - Base
+    file: CentOS-Base
+    url_vars: 'release=$releasever&arch=$basearch&repo=os&infra=$infra'
+    url_path: /$releasever/os/$basearch/
+    enabled: true
+  updates:
+    name: CentOS-$releasever - Updates
+    file: CentOS-Updates
+    url_vars: 'release=$releasever&arch=$basearch&repo=updates&infra=$infra'
+    url_path: /$releasever/updates/$basearch/
+    enabled: true
+  extras:
+    name: CentOS-$releasever - Extras
+    file: CentOS-Extras
+    url_vars: 'release=$releasever&arch=$basearch&repo=extras&infra=$infra'
+    url_path: /$releasever/extras/$basearch/
+  centosplus:
+    name: CentOS-$releasever - Plus
+    file: CentOS-Plus
+    url_vars: >-
+      release=$releasever&arch=$basearch&repo=centosplus&infra=$infra
+    url_path: /$releasever/centosplus/$basearch/
+  epel:
+    name: Extra Packages for Enterprise Linux 7 - $basearch
+    file: CentOS-EPEL
+    url_vars: '?repo=epel-7&arch=$basearch'
+    url_path: /epel/7/$basearch
+    method: metalink
+    repo_url: https://mirrors.fedoraproject.org
+    repo_gpgcheck: 0
+darwin_homebrew_repos:
+  homebrew/cask:
+    enabled: true
+  homebrew/cask-fonts:
+    enabled: true
+  homebrew/cask-drivers:
+    enabled: true
+  homebrew/core:
+    enabled: true
+  homebrew/services:
+    enabled: true
+debian_apt_repos:
+  main:
+    enabled: true
+  contrib:
+  non-free:
+    enabled: true
+fedora_dnf_repos:
+  fedora:
+    name: Fedora $releasever - $basearch
+    url_vars: 'repo=fedora-$releasever&arch=$basearch'
+    url_path: /linux/releases/$releasever/Everything/$basearch/os/
+    enabled: true
+  fedora-modular:
+    name: Fedora Modular $releasever - $basearch
+    url_vars: 'repo=fedora-modular-$releasever&arch=$basearch'
+    url_path: /linux/releases/$releasever/Modular/$basearch/os/
+    enabled: true
+  updates:
+    name: Fedora $releasever - $basearch - Updates
+    url_vars: 'repo=updates-released-f$releasever&arch=$basearch'
+    url_path: /linux/updates/$releasever/Everything/$basearch/
+    enabled: true
+  updates-testing:
+    name: Fedora $releasever - $basearch - Test Updates
+    url_vars: 'repo=updates-testing-f$releasever&arch=$basearch'
+    url_path: /linux/updates/testing/$releasever/Everything/$basearch/
+  updates-modular:
+    name: Fedora Modular $releasever - $basearch - Updates
+    url_vars: 'repo=updates-released-modular-f$releasever&arch=$basearch'
+    url_path: /linux/updates/$releasever/Modular/$basearch/
+    enabled: true
+  updates-testing-modular:
+    name: Fedora Modular $releasever - $basearch - Test Updates
+    url_vars: 'repo=updates-testing-modular-f$releasever&arch=$basearch'
+    url_path: /linux/updates/testing/$releasever/Modular/$basearch/
+  fedora-cisco-openh264:
+    name: openh264 (From Cisco)
+    url_vars: 'repo=fedora-cisco-openh264-$releasever&arch=$basearch'
+    url_path: /openh264/$releasever/$basearch/os/
+freebsd_pkg_repos:
+  FreeBSD:
+    url: pkg+https://pkg.FreeBSD.org/${ABI}/quarterly
+    mirror_type: srv
+    signature_type: fingerprints
+    fingerprints: /usr/share/keys/pkg
+    enabled: yes
+openbsd_pkg_repo:
+  url: https://cdn.openbsd.org/pub/OpenBSD
+  enabled: true
+openbsd_fw_repo:
+  url: "http://firmware.openbsd.org/firmware/\
+    {{ ansible_distribution_version | default(sys_release) }}"
+  enabled: true
+rocky_dnf_repos:
+  baseos:
+    name: Rocky Linux $releasever - BaseOS
+    url_vars: 'arch=$basearch&repo=BaseOS-$releasever'
+    url_path: /$contentdir/$releasever/BaseOS/$basearch/os/
+    enabled: true
+  appstream:
+    name: Rocky Linux $releasever - AppStream
+    url_vars: 'arch=$basearch&repo=AppStream-$releasever'
+    url_path: /$contentdir/$releasever/AppStream/$basearch/os/
+    enabled: true
+  extras:
+    name: Rocky Linux $releasever - Extras
+    url_vars: 'arch=$basearch&repo=extras-$releasever'
+    url_path: /$contentdir/$releasever/extras/$basearch/os/
+  ha:
+    name: Rocky Linux $releasever - HighAvailability
+    url_vars: 'arch=$basearch&repo=HighAvailability-$releasever'
+    url_path: /$contentdir/$releasever/HighAvailability/$basearch/os/
+  nfv:
+    name: Rocky Linux $releasever - NFV
+    url_vars: 'arch=$basearch&repo=NFV-$releasever'
+    url_path: /$contentdir/$releasever/nfv/$basearch/os/
+  plus:
+    name: Rocky Linux $releasever - Plus
+    url_vars: 'arch=$basearch&repo=rockyplus-$releasever'
+    url_path: /$contentdir/$releasever/plus/$basearch/os/
+  powertools:
+    name: Rocky Linux $releasever - PowerTools
+    url_vars: 'arch=$basearch&repo=PowerTools-$releasever'
+    url_path: /$contentdir/$releasever/PowerTools/$basearch/os/
+  resilient-storage:
+    name: Rocky Linux $releasever - ResilientStorage
+    url_vars: 'arch=$basearch&repo=ResilientStorage-$releasever'
+    url_path: /$contentdir/$releasever/ResilientStorage/$basearch/os/
+  rt:
+    name: Rocky Linux $releasever - Realtime
+    url_vars: 'arch=$basearch&repo=RT-$releasever'
+    url_path: /$contentdir/$releasever/RT/$basearch/os/
+ubuntu_apt_repos:
+  main:
+    enabled: true
+  restricted:
+    enabled: true
+  universe:
+  multiverse:

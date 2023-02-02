@@ -1,0 +1,46 @@
+{# vim: ts=2:sw=2:sts=2:et:ft=jinja2
+
+Aptitude repositories configuration file
+
+#}
+{{ header_var }}
+{% for repo in repo_list | selectattr('enabled', '==', true) %}
+
+{{  [ repo['type'],
+      repo['url'] + '/',
+      ansible_distribution_release
+      | default( linux_os_release['VERSION_CODENAME'] )
+      | lower,
+      repo['repo'] ]
+    | join(' ') }}
+{% if repo['security'] == true %}
+{{  [ repo['type'],
+      repo['url'] + '-security',
+      ansible_distribution_release
+      | default( linux_os_release['VERSION_CODENAME'] )
+      | lower
+      + '-security',
+      repo['repo'] ]
+    | join (' ') }}
+{% endif %}
+{% if repo['updates'] == true %}
+{{  [ repo['type'],
+      repo['url'] + '/',
+      ansible_distribution_release
+      | default( linux_os_release['VERSION_CODENAME'] )
+      | lower
+      + '-updates',
+      repo['repo'] ]
+    | join(' ') }}
+{% endif %}
+{% if repo['backports'] == true %}
+{{  [ repo['type'],
+      repo['url'] + '/',
+      ansible_distribution_release
+      | default( linux_os_release['VERSION_CODENAME'] )
+      | lower
+      + '-backports',
+      repo['repo'] ]
+    | join(' ') }}
+{% endif %}
+{% endfor %}
