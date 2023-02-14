@@ -1,0 +1,44 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure the Python interpreter
+#
+########################################################################
+
+- name: Run tasks to test the Python interpreter
+  ansible.builtin.include_tasks: test_python_ssh.yml
+  when: ansible_python_interpreter | default('') != ''
+
+# This will retry Python test if a Python interpreter is found
+- name: Run tasks to define the Python interpreter
+  ansible.builtin.include_tasks: def_python_ssh_raw.yml
+  when: ansible_python_interpreter | default('') == ''
+
+# This will retry defining and resting the Python interpreter after
+# installation.
+- name: Run tasks to install Python
+  ansible.builtin.include_tasks: install_python_ssh_raw.yml
+  when: ansible_python_interpreter | default('') == ''
+
+- name: Re-run facts role if the Python interpreter has changed
+  ansible.builtin.include_role:
+    name: o0_o.host.facts
+    allow_duplicates: true
+    public: true
+  when:
+    - pre_vars['ansible_python_interpreter'] is undefined
+        or  pre_vars['ansible_python_interpreter'] | default
+            != ansible_python_interpreter
+
+- name: Re-run Python installation dependencies Python was installed
+  ansible.builtin.include_role:
+    name: "{{ py_install_dep_item }}"
+    allow_duplicates: true
+    public: true
+  when:
+    - install_python_reg is defined
+    - install_python_reg is changed
+    - py_install_dep_item not in ansible_parent_role_names
+  loop: "{{ install_python_ssh_raw_deps }}"
+  loop_control:
+    loop_var: py_install_dep_item

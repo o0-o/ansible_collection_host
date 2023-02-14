@@ -1,0 +1,27 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Test the Python interpreter
+#
+########################################################################
+
+- name: Test the Python interpreter
+  block:
+
+    - name: The current Python interpreter is valid
+      ansible.builtin.ping:
+
+    - name: Scope ansible_python_interpreter for general use
+      ansible.builtin.set_fact:
+        ansible_python_interpreter: "{{ ansible_python_interpreter }}"
+      changed_when: >-
+        pre_vars['ansible_python_interpreter'] is undefined
+        or  pre_vars['ansible_python_interpreter'] | default
+            != ansible_python_interpreter
+      notify: update host inventory variables
+
+  rescue:
+
+    - name: The Python interpreter failed
+      ansible.builtin.set_fact:
+        ansible_python_interpreter: ''

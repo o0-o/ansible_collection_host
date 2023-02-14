@@ -1,0 +1,61 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define the Python interpreter
+#
+########################################################################
+
+- name: Run dependencies for defining the Python interpreter
+  ansible.builtin.include_tasks: def_python_ssh_raw_dep.yml
+  loop: "{{ def_python_ssh_raw_deps }}"
+  loop_control:
+    loop_var: def_python_ssh_raw_dep_item
+
+- name: RHEL/CentOS 7 should not use Python 3
+  when:
+    - "ansible_os_family | default | lower == 'redhat'
+      or 'rhel' in linux_os_release['ID_LIKE'] | default | lower | split(' ')"
+    - >-
+      ansible_distribution_major_version
+      | default( linux_os_release['VERSION_ID'] )
+      | string
+      == '7'
+  block:
+
+    - name: Define the Python package (RHEL 7 or equivalent)
+      ansible.builtin.set_fact:
+        python_pkg: python2
+
+    - name: Look for python binaries (RHEL 7 or equivalent)
+      ansible.builtin.raw: >-
+        unset python2 python;
+        unalias python2 python 2>/dev/null || true;
+        {{ which_command }} python2 2>/dev/null ||
+        {{ which_command }} python 2>/dev/null
+      register: get_python_bin_rhel_7_reg
+      changed_when: false
+      failed_when: false
+
+# Otherwise, prefer Python 3
+- name: Look for python3 or python binaries
+  ansible.builtin.raw: >-
+    unset python3 python python2;
+    unalias python3 python python2 2>/dev/null || true;
+    {{ which_command }} python3 2>/dev/null ||
+    {{ which_command }} python 2>/dev/null ||
+    {{ which_command }} python2 2>/dev/null
+  register: get_python_bin_reg
+  changed_when: false
+  failed_when: false
+  when: get_python_bin_rhel_7_reg is skipped
+
+- name: Run tasks to test the Python interpreter
+  ansible.builtin.include_tasks: test_python_ssh.yml
+  vars:
+    ansible_python_interpreter: >-
+      {{  get_python_bin_rhel_7_reg['stdout_lines'][0]
+          | default( get_python_bin_reg['stdout_lines'][0] ) }}
+  when: >-
+    get_python_bin_rhel_7_reg['rc']
+    | default( get_python_bin_reg['rc'] )
+    == 0

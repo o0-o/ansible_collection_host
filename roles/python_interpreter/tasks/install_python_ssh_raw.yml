@@ -1,0 +1,64 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Install Python
+#
+########################################################################
+
+- name: Run dependencies for Python installation
+  ansible.builtin.include_tasks: install_python_ssh_raw_dep.yml
+  loop: "{{ install_python_ssh_raw_deps }}"
+  loop_control:
+    loop_var: install_python_ssh_raw_dep_item
+
+# Support for multiple package managers here means trying each until
+# success. Break loop on change to avoid installing it twice.
+- name: Install Python (raw)
+  ansible.builtin.raw: >-
+    {{ ansible_become_method | default }}
+    {{ pkg_mgr_var['install']['cmd'] | default( pkg_mgr_var['cmd'] ) }}
+    {{ pkg_mgr_var['install']['arg'] | default }}
+    {{ pkg_mgr_var['install']['opts'] | default([]) | join(' ') }}
+    {{ python_pkg }}
+  register: install_python_reg
+  failed_when:
+    - install_python_reg is not skipped
+    - ansible_loop['last']
+    - install_python_reg['rc'] != 0 or install_python_reg is not changed
+  changed_when:
+    - install_python_reg['rc'] == 0
+    - >-
+        install_python_reg['stdout_lines']
+        | select( 'match', pkg_mgr_var['install']['changed_out_re'] )
+        != []
+  retries: 3
+  until: install_python_reg is skipped or install_python_reg is changed
+  vars:
+    pkg_mgr_names_var: "{{ os_pkg_mgr_cfgs[os_name].keys() | list }}"
+    pkg_mgr_names_length_var: "{{ pkg_mgr_names_var | length }}"
+    pkg_mgr_name_var: "{{ pkg_mgr_names_var[pkg_mgr_name_index_item] }}"
+    pkg_mgr_var: "{{ pkg_mgmt[pkg_mgr_name_var] }}"
+  when:
+    - not ansible_check_mode
+    - not install_python_reg['changed'] | default(false)
+    - pkg_mgr_var['install'] is defined
+  loop: "{{ range(0, pkg_mgr_names_length_var | int) | list }}"
+  loop_control:
+    extended: true
+    extended_allitems: false
+    loop_var: pkg_mgr_name_index_item
+
+- name: The previous task would have resulted in a change (check mode)
+  ansible.builtin.debug:
+    msg: "The {{ python_pkg }} package would have been installed."
+  changed_when: true
+  when: ansible_check_mode
+
+# This will retry Python test if a Python interpreter is found.
+- name: Run tasks to define the Python interpreter
+  ansible.builtin.include_tasks: def_python_ssh_raw.yml
+
+- name: A Python interpreter is available
+  ansible.builtin.assert:
+    that: ansible_python_interpreter != ''
+    quiet: true
