@@ -5,7 +5,6 @@ Aptitude repositories configuration file
 #}
 {{ header_var }}
 {% for repo in repo_list | selectattr('enabled', '==', true) %}
-
 {{  [ repo['type'],
       repo['url'] + '/',
       ansible_distribution_release
@@ -43,4 +42,5 @@ Aptitude repositories configuration file
       repo['repo'] ]
     | join(' ') }}
 {% endif %}
+
 {% endfor %}

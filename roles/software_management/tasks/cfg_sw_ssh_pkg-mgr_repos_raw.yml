@@ -12,19 +12,22 @@
     List configuration files currently in repositories configuration directory
     (raw)
   ansible.builtin.raw: >-
-    {{ ansible_become_method | default }} ls -1
+    {{ ansible_become_method }} ls -1
     {{ repos_cfg_dir_var | quote }}
   register: repo_cfg_files_reg
   changed_when: false
 
+# This is necessary when repository configuration files are idenfitied
+# by file extension.
 - name: There are extraneous repository configuration files
-  when: extra_files_var != []
-  notify: "{{ notify_var }}"
+  when:
+    - extra_files_var != []
+    - ext_var != ''
   block:
 
     - name: Backup extraneous repository configuration files (raw)
       ansible.builtin.raw: >-
-        {{ ansible_become_method | default }} mv
+        {{ ansible_become_method }} mv
         {{ extra_file_path_var | quote }}
         {{ extra_file_path_var | quote }}".$(date +%Y%m%d%H%M%S)~"
       when: not ansible_check_mode
@@ -42,15 +45,7 @@
 
 - name: Run tasks to template the each repository config file (raw)
   ansible.builtin.include_tasks: cfg_sw_ssh_pkg-mgr_template_raw.yml
-  vars:
-    cfg_file_var: >-
-      {{ repos_cfg_dir_var }}/{{ repo_item['repo'] }}{{ ext_var
-                                                        | default }}
-    title_var: >-
-      {{ pkg_mgr_name_pretty_var }} {{ repo_item['repo'] }}
-      Repository Configuration
-    template_file_var: >-
-      {{ pkg_mgr_name_item | regex_replace('^yum$', 'dnf') }}_repo_cfg.j2
-  loop: "{{ repo_list }}"
+  # Use indexed loop for optimal, parallel execution
+  loop: "{{ range( 0, repo_list | length ) | list }}"
   loop_control:
-    loop_var: repo_item
+    loop_var: repo_index

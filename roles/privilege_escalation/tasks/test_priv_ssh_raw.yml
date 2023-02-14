@@ -1,0 +1,24 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Test the current privilege escalation method using the raw module
+#
+########################################################################
+
+- name: "Test {{ ansible_become_method }} (raw)"
+  ansible.builtin.raw: >-
+    {{ ansible_become_method }} echo '{{ ansible_become_method }}'
+  register: test_priv_reg
+  changed_when: false
+  failed_when: false
+  when: not is_root_var
+
+- name: "Test {{ ansible_become_method }} with root user (raw)"
+  ansible.builtin.raw: >-
+    unset {{ ansible_become_method }};
+    unalias {{ ansible_become_method }} 2>/dev/null || true;
+    {{ which_command }} {{ ansible_become_method }}
+  register: test_priv_root_reg
+  failed_when: false
+  changed_when: false
+  when: is_root_var

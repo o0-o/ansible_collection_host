@@ -1,0 +1,16 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Privilege escalation over SSH dependencies
+#
+########################################################################
+
+- name: Run role dependencies for privilege escalation over SSH
+  ansible.builtin.include_role:
+    name: "{{ priv_ssh_dep_item['role'] }}"
+    public: true
+  when:
+    - >-
+        priv_ssh_dep_item['role'] not in ansible_role_names
+        or priv_ssh_dep_item['dupes'] | default(false)
+    - priv_ssh_dep_item['condition'] | default(true)

@@ -1,0 +1,76 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Arch Linux software management defaults
+#
+########################################################################
+
+archlinux_pacman_cfg_default: {}
+archlinux_pacman_cfg_add: {}
+archlinux_pacman_cfg: >-
+  {{  [ pacman_cfg_default,
+        pacman_cfg_add,
+        archlinux_pacman_cfg_default,
+        archlinux_pacman_cfg_add ]
+      | combine }}
+
+# Default configuration for all Pacman repositories in Arch
+archlinux_pacman_repos_cfg_default:
+  Server:
+    - https://geo.mirror.pkgbuild.com/$repo/os/$arch
+    - https://mirror.rackspace.com/archlinux/$repo/os/$arch
+    - https://mirror.leaseweb.net/archlinux/$repo/os/$arch
+archlinux_pacman_repos_cfg_add:
+archlinux_pacman_repos_cfg: >-
+  {{  [ repos_cfg,
+        pacman_repos_cfg_default,
+        pacman_repos_cfg_add,
+        archlinux_pacman_repos_cfg_default,
+        archlinux_pacman_repos_cfg_add ]
+      | combine }}
+
+# Individual default repositories
+archlinux_pacman_repo_core:
+  enabled: true
+archlinux_pacman_repo_extra:
+  enabled: true
+archlinux_pacman_repo_community: {}
+archlinux_pacman_repo_community_testing: {}
+archlinux_pacman_repo_multilib: {}
+archlinux_pacman_repo_multilib_testing: {}
+archlinux_pacman_repo_testing: {}
+
+# Combine the shared repository configuration into each Pacman
+# repository's individual configuration.
+archlinux_pacman_repos_default:
+  core: >-
+    {{  [ archlinux_pacman_repos_cfg,
+          archlinux_pacman_repo_core ]
+        | combine }}
+  extra: >-
+    {{  [ archlinux_pacman_repos_cfg,
+          archlinux_pacman_repo_extra ]
+        | combine }}
+  community: >-
+    {{  [ archlinux_pacman_repos_cfg,
+          archlinux_pacman_repo_community ]
+        | combine }}
+  community-testing: >-
+    {{  [ archlinux_pacman_repos_cfg,
+          archlinux_pacman_repo_community_testing ]
+        | combine }}
+  multilib: >-
+    {{  [ archlinux_pacman_repos_cfg,
+          archlinux_pacman_repo_multilib ]
+        | combine }}
+  multilib-testing: >-
+    {{  [ archlinux_pacman_repos_cfg,
+          archlinux_pacman_repo_multilib_testing ]
+        | combine }}
+  testing: >-
+    {{  [ archlinux_pacman_repos_cfg,
+          archlinux_pacman_repo_testing ]
+        | combine }}
+archlinux_pacman_repos_add: {}
+archlinux_pacman_repos: >-
+  {{ [archlinux_pacman_repos_default, archlinux_pacman_repos_add] | combine }}

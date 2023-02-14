@@ -1,0 +1,27 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Test the current privilege escalation method using become
+#
+########################################################################
+
+- name: "Test {{ ansible_become_method }}"
+  ansible.builtin.command:
+    argv:
+      - echo
+      - "{{ ansible_become_method }}"
+  become: true
+  register: test_priv_reg
+  failed_when: false
+  changed_when: false
+  when: not is_root_var
+
+- name: "Test {{ ansible_become_method }} with root user"
+  ansible.builtin.command:
+    argv:
+      - "{{ which_command }}"
+      - "{{ ansible_become_method }}"
+  register: test_priv_root_reg
+  failed_when: false
+  changed_when: false
+  when: is_root_var

@@ -5,6 +5,10 @@
 #
 # Roughly emulate ansible.builtin.template using only raw commands.
 #
+# NOTE: Permissions and file ownership are not handled here but they are
+# in cfg_sw_ssh_pkg-mgr_template.yml which should always run after this
+# if the role runs successfully.
+#
 ########################################################################
 
 - name: Get the contents of the configuration file (raw)
@@ -20,7 +24,6 @@
     cfg_template_var: >-
       {{ lookup('ansible.builtin.template', template_file_var) }}
   when: cfg_file_reg['stdout_lines'] != cfg_template_var.splitlines()
-  notify: "{{ notify_var }}"
   block:
 
     - name: The configuration file exists
@@ -59,4 +62,4 @@
     - name: Define a list of package managers with configuration changes (raw)
       ansible.builtin.set_fact:
         cfg_pkg_mgr_names: >-
-          {{ cfg_pkg_mgr_names | default([]) | union( [pkg_mgr_name_item] ) }}
+          {{ cfg_pkg_mgr_names | default([]) | union( [pkg_mgr_name_var] ) }}

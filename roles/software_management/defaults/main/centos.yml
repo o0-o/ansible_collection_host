@@ -1,0 +1,83 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# CentOS Linux software management defaults
+#
+########################################################################
+
+centos_bug_tracker_url: "http://bugs.centos.org/set_project.php?\
+  project_id=23&\
+  ref=http://bugs.centos.org/bug_report_page.php?category=yum"
+
+# /etc/yum.conf
+centos_yum_cfg_default:
+  exactarch: 1
+  bugtracker_url: "{{ centos_bug_tracker_url }}"
+  distroverpkg: centos-release
+centos_yum_cfg_add: {}
+centos_yum_cfg: >-
+  {{  [ dnf_yum_cfg_common_default,
+        dnf_yum_cfg_common_add,
+        yum_cfg_default,
+        yum_cfg_add,
+        centos_yum_cfg_default,
+        centos_yum_cfg_add ]
+      | combine }}
+
+# Configuration for all YUM repositories in CentOS
+centos_yum_repos_cfg_default:
+  method: mirrorlist
+  url: http://mirrorlist.centos.org
+  gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+centos_yum_repos_cfg_add: {}
+centos_yum_repos_cfg: >-
+  {{  [ repos_cfg,
+        dnf_yum_repos_cfg_common_default,
+        dnf_yum_repos_cfg_common_add,
+        yum_repos_cfg_default,
+        yum_repos_cfg_add,
+        centos_yum_repos_cfg_default,
+        centos_yum_repos_cfg_add ]
+      | combine }}
+
+# Individual default repositories
+centos_yum_repo_base:
+  name: CentOS-$releasever - Base
+  file: CentOS-Base
+  url_vars: 'release=$releasever&arch=$basearch&repo=os&infra=$infra'
+  url_path: /$releasever/os/$basearch/
+  enabled: true
+centos_yum_repo_updates:
+  name: CentOS-$releasever - Updates
+  file: CentOS-Updates
+  url_vars: 'release=$releasever&arch=$basearch&repo=updates&infra=$infra'
+  url_path: /$releasever/updates/$basearch/
+  enabled: true
+centos_yum_repo_extras:
+  name: CentOS-$releasever - Extras
+  file: CentOS-Extras
+  url_vars: 'release=$releasever&arch=$basearch&repo=extras&infra=$infra'
+  url_path: /$releasever/extras/$basearch/
+centos_yum_repo_plus:
+  name: CentOS-$releasever - Plus
+  file: CentOS-Plus
+  url_vars: 'release=$releasever&arch=$basearch&repo=centosplus&infra=$infra'
+  url_path: /$releasever/centosplus/$basearch/
+centos_yum_repo_epel:
+  name: Extra Packages for Enterprise Linux 7 - $basearch
+  url_vars: '?repo=epel-7&arch=$basearch'
+  url_path: /epel/7/$basearch
+  method: metalink
+  url: https://mirrors.fedoraproject.org
+# NOTE: If 'file' is not set, the key is used. The .repo extension is
+# defined in vars/main/pkg_mgmt.yml. It should not be included here.
+
+centos_yum_repos_default:
+  base: "{{ [centos_yum_repos_cfg, centos_yum_repo_base] | combine }}"
+  updates: "{{ [centos_yum_repos_cfg, centos_yum_repo_updates] | combine }}"
+  extras: "{{ [centos_yum_repos_cfg, centos_yum_repo_extras] | combine }}"
+  centosplus: "{{ [centos_yum_repos_cfg, centos_yum_repo_plus] | combine }}"
+  epel: "{{ [centos_yum_repos_cfg, centos_yum_repo_epel] | combine }}"
+centos_yum_repos_add: {}
+centos_yum_repos: >-
+  {{ [centos_yum_repos_default, centos_yum_repos_add] | combine }}

@@ -3,10 +3,6 @@
 #
 # Configure the Ansible become method (privilege escalation)
 #
-# A user can be supplied with user, user_var or user_item variables,
-# otherwise, ansible_user is used. This allows us to determine the
-# become method for a user before defining it as ansible_user.
-#
 # We don't assume Python is available, but if the role must be run
 # before Python is installed, it should be run again to ensure all
 # configuration is applied. To grant become privileges to a user that
@@ -14,56 +10,14 @@
 #
 ########################################################################
 
-# Prefer include_role to the dependencies list in meta/main.yml because
-# duplication is not tracked between the two, and we need to use
-# include_role elsewhere in the collection where dependencies are
-# subject to conditions.
-- name: Run the o0_o.host.connection role
-  ansible.builtin.include_role:
-    name: o0_o.host.connection
-    allow_duplicates: false
-    public: true
+# Need to do this so that priv_user is not continually evaluated as
+# ansible_user as that value may change later.
+- name: Define the user that required privilege escalation
+  ansible.builtin.set_fact:
+    priv_user: "{{ priv_user }}"
 
-# The facts role will gather basic information from uname and
-# /etc/os-release if a Python interpreter is not yet available.
-- name: Run the o0_o.host.facts role to gather facts
-  ansible.builtin.include_role:
-    name: o0_o.host.facts
-    allow_duplicates: false
-    public: true
-
-- name: Define platform-specific become variables
-  ansible.builtin.include_vars: "{{ vars_file_var }}"
+- name: Run tasks to configure the privilege escalation method
+  ansible.builtin.include_tasks: cfg_priv_ssh.yml
   vars:
-    vars_file_var: "vars/{{ ansible_system | default(sys) | lower }}.yml"
-  when: lookup('ansible.builtin.fileglob', vars_file_var) != []
-
-# Handling of the user variables is delicate because it's very easy to
-# run into an infinite loop where ansible_user=ansible_user. Tread
-# lightly. See o0_o.host.ansible_user for an example of how to approach
-# the new_ansible_user_var variable.
-- name: Configure become for current or new Ansible user
-  vars:
-    user_var: "{{ new_ansible_user_var | default(ansible_user) }}"
-  block:
-
-    # We use skip=true here in the case of RouterOS which does not
-    # require any become method.
-    - name: Run tasks to configure the become method
-      ansible.builtin.include_tasks:
-        file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
-                          'tasks',
-                          prefix='cfg_become_' ) }}"
-      when:
-        - ansible_network_os | default != 'community.network.routeros'
-        - user_var is defined
-        - user_var != 'root'
-
-    - name: Set become method to null for root
-      ansible.builtin.set_fact:
-        ansible_become_method:
-      when: user_var == 'root'
-
-- name: Run tasks to configure become method in the inventory
-  ansible.builtin.include_tasks: cfg_become_inv.yml
-  when: ansible_become_method | default != ''
+    is_root_var: "{{ ansible_user == 'root' }}"
+  when: ansible_connection == 'ssh'

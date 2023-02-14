@@ -1,34 +1,25 @@
 ---
 # vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
 #
-# Configure doas as the become method
+# Configure doas as the privilege escalation method
 #
 ########################################################################
-
-# doas -L is an inocuous command that should work for any user as long
-# as doas is present.
-- name: doas is present and appears to be functional
-  ansible.builtin.command:
-    argv:
-      - doas
-      - -L
-  changed_when: false
 
 - name: Configure user with passwordless doas privileges
   ansible.builtin.lineinfile:
     path: "{{ doas_cfg_path }}/{{ doas_cfg_file }}"
-    regexp: " {{ user_var | regex_escape }}$"
-    line: "permit nopass {{ user_var }}"
+    regexp: " {{ priv_user | regex_escape }}$"
+    line: "permit nopass {{ priv_user }}"
     state: present
     mode: "{{ doas_cfg_mode }}"
     create: true
     backup: true
     validate: "{{ doas_bin }} -C %s"
-  become: "{{ become_var }}"
+  become: "{{ not is_root_var }}"
 
-# Remove unnecessary software as a rule
+# Remove unnecessary software
 - name: Remove the sudo package
   ansible.builtin.package:
     name: sudo
     state: absent
-  become: "{{ become_var }}"
+  become: "{{ not is_root_var }}"

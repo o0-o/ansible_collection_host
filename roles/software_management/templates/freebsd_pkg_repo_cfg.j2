@@ -4,9 +4,15 @@ FreeBSD repository configuration file
 
 #}
 {{ header_var }}
-
-{{ repo_item['repo'] }}: {
-{% for key in repo_item.keys() | list | difference( ['repo'] ) %}
-  {{ key }}: {{ repo_item[key] | to_json }}
+{{ repo_var['repo'] }}: {
+{% for key in repo_var.keys()
+              | list
+              | difference( ['repo'] )
+              | sort %}
+{% if repo_var[key] in ['yes', 'no'] %}
+  {{ key }}: {{ repo_var[key] }},
+{% else %}
+  {{ key }}: "{{ repo_var[key] }}",
+{% endif %}
 {% endfor %}
 }

@@ -1,0 +1,107 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# FreeBSD software management defaults
+#
+# These values are all taken from a stock installation of FreeBSD 13.
+#
+########################################################################
+
+# PKG package manager
+freebsd_pkg_cfg_default:
+  ALIAS:
+    all-depends: query %dn-%dv
+    annotations: info -A
+    build-depends: info -qd
+    cinfo: info -Cx
+    comment: 'query -i "%c"'
+    csearch: search -Cx
+    desc: 'query -i "%e"'
+    download: fetch
+    iinfo: info -ix
+    isearch: search -ix
+    prime-list: "query -e '%a = 0' '%n'"
+    prime-origins: "query -e '%a = 0' '%o'"
+    leaf: "query -e '%#r == 0' '%n-%v'"
+    list: info -ql
+    noauto: "query -e '%a == 0' '%n-%v'"
+    options: 'query -i "%n - %Ok: %Ov"'
+    origin: info -qo
+    orphans: version -vRl\?
+    provided-depends: info -qb
+    rall-depends: rquery %dn-%dv
+    raw: info -R
+    rcomment: 'rquery -i "%c"'
+    rdesc: 'rquery -i "%e"'
+    required-depends: info -qr
+    roptions: 'rquery -i "%n - %Ok: %Ov"'
+    shared-depends: info -qB
+    show: info -f -k
+    size: info -sq
+    unmaintained: "query -e '%m = \"ports@FreeBSD.org\"' '%o (%w)'"
+    runmaintained: "rquery -e '%m = \"ports@FreeBSD.org\"' '%o (%w)'"
+freebsd_pkg_cfg_add: {}
+freebsd_pkg_cfg: >-
+  {{ [freebsd_pkg_cfg_default, freebsd_pkg_cfg_add] | combine }}
+
+# System updater
+freebsd_update_cfg_default:
+  KeyPrint: 800651ef4b4c71c27e60786d7b487188970f4b4169cc055784e21eb71d410cc5
+  ServerName: update.FreeBSD.org
+  Components:
+    - src
+    - world
+    - kernel
+  IgnorePaths:
+  IDSIgnorePaths:
+    - /usr/share/man/cat
+    - /usr/share/man/whatis
+    - /var/db/locate.database
+    - /var/log
+  UpdateIfUnmodified:
+    - /etc/
+    - /var/
+    - /root/
+    - /.cshrc
+    - /.profile
+  MergeChanges:
+    - /etc/
+    - /boot/device.hints
+  WorkDir:
+    /var/db/freebsd-update
+  MailTo: root
+  AllowAdd: 'yes'
+  AllowDelete: 'yes'
+  KeepModifiedMetadata: 'yes'
+  StrictComponents: 'no'
+  BackupKernel: 'yes'
+  BackupKernelDir: /boot/kernel.old
+  BackupKernelSymbolFiles: 'no'
+  CreateBootEnv: 'yes'
+freebsd_update_cfg_add: {}
+freebsd_update_cfg: >-
+  {{ [freebsd_update_cfg_default, freebsd_update_cfg_add] | combine }}
+
+# Default configurations for all FreeBSD repositories
+freebsd_pkg_repos_cfg_default: {}
+freebsd_pkg_repos_cfg_add: {}
+freebsd_pkg_repos_cfg: >-
+  {{  [ repos_cfg,
+        freebsd_pkg_repos_cfg_default,
+        freebsd_pkg_repos_cfg_add ]
+      | combine }}
+
+# Individual default repositories
+freebsd_pkg_repo_freebsd:
+  url: 'pkg+https://pkg.FreeBSD.org/${ABI}/quarterly'
+  mirror_type: 'srv'
+  signature_type: 'fingerprints'
+  fingerprints: '/usr/share/keys/pkg'
+  enabled: 'yes'
+
+# FreeBSD only uses one PKG repository by default.
+freebsd_pkg_repos_default:
+  FreeBSD: "{{ [freebsd_pkg_repos_cfg, freebsd_pkg_repo_freebsd] | combine }}"
+freebsd_pkg_repos_add: {}
+freebsd_pkg_repos: >-
+  {{ [ freebsd_pkg_repos_default, freebsd_pkg_repos_add ] | combine }}

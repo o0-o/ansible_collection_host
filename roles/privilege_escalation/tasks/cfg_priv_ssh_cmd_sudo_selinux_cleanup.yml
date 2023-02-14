@@ -1,0 +1,43 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Reset the Ansible user and SSH configuration after configuring SELinux
+#
+########################################################################
+
+- name: Reset the Ansible user
+  ansible.builtin.set_fact:
+    ansible_user: "{{ priv_user }}"
+
+- name: Reset connection to the host
+  ansible.builtin.meta: reset_connection
+
+- name: Test the connection [YUBIKEY PRESS]
+  ping:
+  become: true
+
+- name: Reset sshd_config
+  ansible.builtin.copy:
+    src: "{{ cfg_sshd_config_reg['backup_file'] }}"
+    remote_src: true
+    dest: /etc/sshd_config
+    owner: root
+    group: "{{ root_grp }}"
+    mode: 0644
+    backup: true
+  become: true
+  when: cfg_sshd_config_reg is changed
+
+- name: Reload the sshd service
+  ansible.builtin.service:
+    name: sshd
+    state: reloaded
+  become: true
+
+- name: Remove SSH key to the root user
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ ssh_pub_key }}"
+    state: absent
+  become: true
+  when: root_ssh_key_reg is changed

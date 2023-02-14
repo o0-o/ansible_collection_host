@@ -1,0 +1,31 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Run package manager commands using the raw module
+#
+# See vars/main/pkg_mgmt.yml
+#
+########################################################################
+
+- name: Only run if a command is defined
+  when: pkg_mgr_var[cmd_name_item] is defined
+  block:
+
+    - name: "Run the package manager {{ cmd_name_item }} command (raw)"
+      ansible.builtin.raw: >-
+        {{ ansible_become_method }}
+        {{ pkg_mgr_env | default }}
+        {{ cmd_var | map('quote') | join(' ') }}
+      register: pkg_mgr_cmd_reg
+      failed_when: pkg_mgr_cmd_reg['rc'] not in success_codes_var
+      when: not ansible_check_mode
+
+    - name: The previous task would have resulted in a change (check mode)
+      ansible.builtin.debug:
+        msg: >-
+          The {{ pkg_mgr_var['cmd'] }} package manager would have checked
+          for updates.
+      register: pkg_mgr_cmd_reg
+      failed_when: pkg_mgr_cmd_reg['rc'] not in success_codes_var
+      changed_when: true
+      when: ansible_check_mode

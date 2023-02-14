@@ -9,93 +9,31 @@
 #
 ########################################################################
 
-- name: >-
-    Try connection with possible IP addresses and fall back to Vagrant
-    configuration
-  block:
-
-    - name: >-
-        Try connection with different users and fall back to trying possible IP
-        addresses
-      block:
-
-        - name: Try connection as is and fall back to trying different users
-          block:
-
-            - name: >-
-                Run tasks to test the connection with existing configuration
-              ansible.builtin.include_tasks: test_con.yml
-
-          rescue:
-
-            # network_cli throws warnings if we don't do this.
-            - name: Define the Ansible host
-              ansible.builtin.set_fact:
-                ansible_host: "{{ ansible_host }}"
-
-            # This is used in test_con_ip4s.yml to preserve the original
-            # value of ansible_user.
-            - name: Define all possible administrators
-              ansible.builtin.set_fact:
-                possible_adms: >-
-                  {{  ( ansible_user | default != '' )
-                      | ternary(  [ansible_user]
-                                  + default_adms
-                                    | difference( [ansible_user] ),
-                                  default_adms ) }}
-
-            # Assume hosts will respond to ping
-            - name: The remote host is reachable from localhost
-              ansible.builtin.command:
-                argv:
-                  - ping
-                  - -c
-                  - 2
-                  - "{{ ansible_host }}"
-              changed_when: false
-              delegate_to: 127.0.0.1
-
-            - name: Run tasks to test the connection with different users
-              ansible.builtin.include_tasks: test_con_users.yml
-
-      rescue:
-
-        - name: Run tasks to test the connection with different IPv4 addresses
-          ansible.builtin.include_tasks: test_con_ip4s.yml
-
-  # The host is not reachable. Interrogate Vagrant in case the host is a
-  # virtual machine on local NAT.
-  rescue:
-
-    - name: Run tasks to test the connection with parameters from Vagrant
-      ansible.builtin.include_tasks: test_con_vagrant.yml
-
-# Import the role here instead of setting it as dependency. No point in
-# running it until a connection has been successfully established.
-- name: Import the o0_o.inventory role
-  ansible.builtin.import_role:
+- name: Run the o0_o.inventory role
+  ansible.builtin.include_role:
     name: o0_o.inventory
     allow_duplicates: false
+    public: true
 
-# See o0_o.inventory for git and backup behavior for inventory files.
-- name: Write currently defined Ansible variables to the local inventory
-  ansible.builtin.lineinfile:
-    path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}.yml"
-    regexp: "^#?{{ var_item | regex_escape }}:"
-    insertbefore: "^{{ safe_zone_comment | regex_escape }}$"
-    firstmatch: true
-    line: "{{ var_item }}: {{ vars[var_item] }}"
-    backup: "{{ inv_bu }}"
+# Prevents some misbehavior.
+- name: Define the Ansible host and connection
+  ansible.builtin.set_fact:
+    ansible_host: "{{ ansible_host }}"
+    ansible_connection: "{{ ansible_connection }}"
+
+- name: Install/update pip and ansible-pylibssh on localhost
+  ansible.builtin.pip:
+    name:
+      - pip
+      - ansible-pylibssh
+    state: latest
   delegate_to: 127.0.0.1
-  when: vars[var_item] is defined
-  loop:
-    - ansible_host
-    - ansible_connection
-    - ansible_port
-    - ansible_ssh_private_key_file
-    - ansible_user
-    - ansible_network_os
-    - ansible_network_cli_ssh_type
-  loop_control:
-    loop_var: var_item
-  notify: git commit inventory
+  run_once: true
+  when: use_libssh
+
+- name: Run tasks to test the connection with existing configuration
+  ansible.builtin.include_tasks: test_con.yml
+
+- name: Run tasks to configure the connection if necessary
+  ansible.builtin.include_tasks: cfg_con.yml
+  when: not use_con

@@ -13,10 +13,11 @@
     owner: root
     group: "{{ root_grp }}"
     backup: true
+  register: template_pkg_mgr_cfg_reg
   become: true
-  notify: "{{ notify_var }}"
 
 - name: Define a list of package managers with configuration changes
   ansible.builtin.set_fact:
     cfg_pkg_mgr_names: >-
-      {{ cfg_pkg_mgr_names | default([]) | union( [pkg_mgr_name_item] ) }}
+      {{ cfg_pkg_mgr_names | default([]) | union( [pkg_mgr_name_var] ) }}
+  when: template_pkg_mgr_cfg_reg is changed

@@ -5,19 +5,24 @@
 #
 ########################################################################
 
-# docs.ansible.com/ansible/latest/network/user_guide/platform_routeros.html
+# This disables formatting and sets display width to 1024 to avoid line
+# breaks in output.
 - name: Add +cet1024w suffix to Ansible user (RouterOS)
   ansible.builtin.set_fact:
     ansible_user: "{{ ansible_user }}+cet1024w"
-  when: ansible_user | regex_search( '+cet1024w' | regex_escape + '$' ) is none
+  when: ansible_user | regex_search('\+cet1024w$') is none
 
-- name: Test the connection (RouterOS)
+- name: Test the connection (RouterOS) [YUBIKEY PRESS]
   community.routeros.command:
     commands:
       - /put [/system identity get value-name=name]
   register: test_con_reg
   changed_when: false
-  failed_when: test_con_reg['stdout_lines'][0][0] == ''
+  until: test_con_reg['stdout_lines'][0][0] | default('') != ''
   ignore_errors: true
   ignore_unreachable: true
-  timeout: 10
+  timeout: "{{ con_timeout }}"
+  retries: "{{ con_retries }}"
+  when: >-
+    test_con_reg['unreachable'] | default(false)
+    or test_con_reg['failed'] | default(true)

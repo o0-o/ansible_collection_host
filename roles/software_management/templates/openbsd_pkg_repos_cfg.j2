@@ -4,5 +4,7 @@ OpenBSD package manager configuration file
 
 #}
 {{ header_var }}
-
-{{ repo_list | selectattr('enabled', '==', true) | map(attribute='url') | first }}
+{{  repo_list
+    | selectattr('enabled', '==', true)
+    | map(attribute='url')
+    | first }}

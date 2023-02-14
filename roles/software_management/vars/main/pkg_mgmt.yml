@@ -1,0 +1,246 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Package management commands and configuration
+#
+########################################################################
+
+# Non-configurable commands and configuration
+pkg_mgmt:
+
+  apt:
+    cmd: apt-get
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    cfg_file: /etc/apt/apt.conf.d/90overrides
+    repos_cfg_file: /etc/apt/sources.list
+    clean:
+      arg: clean
+    update:
+      arg: update
+      opts:
+        - --assume-yes
+        - --quiet
+    install:
+      arg: install
+      opts:
+        - --assume-yes
+        - --quiet
+      changed_out_re: '^The following NEW packages will be installed:$'
+    upgrade:
+      arg: upgrade
+      opts:
+        - --assume-yes
+        - --quiet
+    release_upgrade:
+      arg: full-upgrade
+      opts:
+        - --assume-yes
+        - --quiet
+
+  homebrew:
+    cmd: brew
+    clean:
+      arg: cleanup
+      opts:
+        - -s
+    update:
+      arg: update
+    install:
+      arg: install
+      changed_out_re: '.* Installing .*'
+    upgrade:
+      arg: upgrade
+
+  dnf:
+    cmd: dnf
+    cfg_file: /etc/dnf/dnf.conf
+    repos_cfg_dir: /etc/yum.repos.d
+    repos_cfg_ext: repo
+    clean:
+      arg: clean
+      opts:
+        - all
+    update:
+      arg: check-update
+      opts:
+        - --assumeyes
+        - --quiet
+      success_codes:
+        - 0
+        - 100 #exits 100 if updates are available
+    install:
+      arg: install
+      opts:
+        - --assumeyes
+        - --quiet
+      changed_out_re: '^Installed:$'
+    upgrade:
+      arg: update
+      opts:
+        - --assumeyes
+        - --quiet
+    release_upgrade:
+      arg: systemd-upgrade
+      opts:
+        - download
+        - "--releaseserver={{ releases[os_name] }}"
+
+  freebsd_pkg:
+    cmd: pkg
+    cfg_file: /usr/local/etc/pkg.conf
+    repos_cfg_dir: /usr/local/etc/pkg/repos
+    repos_cfg_ext: conf
+    clean:
+      arg: clean
+      opts:
+        - -a
+        - --yes
+    update:
+      arg: update
+      opts:
+        - -f
+    install:
+      arg: install
+      opts:
+        - --yes
+      changed_out_re: '^New packages to be INSTALLED:$'
+    upgrade:
+      arg: upgrade
+      opts:
+        - --yes
+
+  freebsd_update:
+    cmd: freebsd-update
+    cfg_file: /etc/freebsd-update.conf
+    update:
+      arg: updatesready
+      success_codes:
+        - 0
+        - 2
+    upgrade:
+      arg: install
+    release_upgrade:
+      arg: upgrade
+
+  macos_softwareupdate:
+    cmd: softwareupdate
+    update:
+      opts:
+        - --list
+    upgrade:
+      opts:
+        - --install
+        - --recommended
+
+  openbsd_pkg:
+    cmd: pkg_add
+    repos_cfg_file: /etc/installurl
+    clean:
+      cmd: pkg_check
+      opts:
+        - -F
+        - -f
+        - -x
+        - -I
+    update:
+      opts:
+        - -s
+        - -x
+        - -u
+        - -I
+    install:
+      opts:
+        - -z
+        - -I
+      changed_out_re: '.*: ok$'
+    upgrade:
+      opts:
+        - -u
+        - -I
+
+  openbsd_fw:
+    cmd: fw_update
+    update:
+      opts:
+        - -a
+        - -n
+        - "-p{{ repos['openbsd']['openbsd_fw']['openbsd_fw_repo']['url']
+                | default('https://cdn.openbsd.org/pub/OpenBSD', true) }}"
+    upgrade:
+      opts:
+        - -a
+        - "-p{{ repos['openbsd']['openbsd_fw']['openbsd_fw_repo']['url']
+                | default('https://cdn.openbsd.org/pub/OpenBSD', true) }}"
+
+  openbsd_sys:
+    cmd: syspatch
+    update:
+      opts:
+        - -c
+    upgrade:
+      cmd: syspatch
+    release_upgrade:
+      cmd: sysupgrade
+      upgrade:
+        - -r
+
+  pacman:
+    cmd: pacman
+    cfg_file: /etc/pacman.conf
+    repos_cfg_dir: /etc/pacman.d
+    init:
+      cmd: pacman-key
+      opts:
+        - --init
+    key:
+      cmd: pacman-key
+      key_opts:
+        - --populate
+    clean:
+      opts:
+        - --sync
+        - --clean
+        - --noconfirm
+    update:
+      opts:
+        - --sync
+        - --refresh
+        - --refresh
+    install:
+      opts:
+        - --sync
+        - --noconfirm
+      changed_out_re: '.* installing .*'
+    upgrade:
+      opts:
+        - --sysupgrade
+        - --noconfirm
+
+  yum:
+    cmd: yum
+    cfg_file: /etc/yum.conf
+    repos_cfg_dir: /etc/yum.repos.d
+    repos_cfg_ext: repo
+    clean:
+      arg: clean
+      opts:
+        - all
+    update:
+      arg: check-update
+      opts:
+        - --assumeyes
+        - --quiet
+      success_codes:
+        - 0
+        - 100 #exits 100 if updates are available
+    install:
+      arg: install
+      opts:
+        - --assumeyes
+      changed_out_re: '^Installed:$'
+    upgrade:
+      arg: update
+      opts:
+        - --assumeyes
+        - --quiet

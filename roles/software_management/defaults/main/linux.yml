@@ -1,0 +1,83 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Linux package manager configuration defaults
+#
+########################################################################
+
+# Aptitude configuration syntax is complex and divided across several
+# files. Values here will serve as overrides, but by default we don't
+# change the configuration. This may change in the future.
+apt_cfg_default: {}
+apt_cfg_add: {}
+
+dnf_yum_cfg_common_default:
+  autocheck_running_kernel: 1
+  check_config_file_age: 1
+  clean_requirements_on_remove: 1
+  debuglevel: 2
+  diskspacecheck: 1
+  gpgcheck: 1
+  installonly_limit: 3
+  ip_resolve: 4 #Limit to IPv4
+  keepcache: 0
+  localpkg_gpgcheck: 1
+  metadata_expire: 21600 #6 hours
+  obsoletes: 1
+  plugins: 1
+  skip_if_unavailable: 0
+  sslverify: 1
+  repo_gpgcheck: 1
+dnf_yum_cfg_common_add: {}
+
+dnf_cfg_default:
+  best: 0
+  cacheonly: 0
+  countme: 0
+  fastestmirrror: 1
+  gpgkey_dns_verification: 0
+  install_weak_deps: 0
+  log_compress: 1
+  module_obsoletes: 1
+  sslverifystatus: 1
+dnf_cfg_add: {}
+
+yum_cfg_default:
+  cachedir: /var/cache/yum/$basearch/$releasever
+  payload_gpgcheck: 1
+  skip_broken: 0
+  tolerant: 1
+yum_cfg_add: {}
+
+pacman_cfg_default:
+  HoldPkg:
+    - pacman
+    - glibc
+  Architecture: auto
+  CheckSpace:
+  SigLevel:
+    - Required
+    - DatabaseOptional
+  LocalFileSigLevel:
+    - Optional
+pacman_cfg_add: {}
+
+# Linux repository configuration defaults (applied to all repositories)
+apt_repos_cfg_default:
+  type: deb
+  updates: true
+  backports: false
+apt_repos_cfg_add: {}
+
+dnf_yum_repos_cfg_common_default: {}
+dnf_yum_repos_cfg_common_add: {}
+
+dnf_repos_cfg_default:
+  type: rpm
+dnf_repos_cfg_add: {}
+
+yum_repos_cfg_default: {}
+yum_repos_cfg_add: {}
+
+pacman_repos_cfg_default: {}
+pacman_repos_cfg_add: {}

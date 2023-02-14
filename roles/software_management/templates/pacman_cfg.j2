@@ -4,9 +4,8 @@ Pacman configuration file
 
 #}
 {{ header_var }}
-
 [options]
-{% for key in pkg_mgr_cfg_var %}
+{% for key in pkg_mgr_cfg_var.keys() | list | sort %}
 {% if pkg_mgr_cfg_var[key] | type_debug == 'NoneType' %}
 {{ key }}
 {% elif pkg_mgr_cfg_var[key] | type_debug == 'list' %}
@@ -18,13 +17,7 @@ Pacman configuration file
 {% for repo in repo_list | selectattr('enabled', '==', true) %}
 
 [{{ repo['repo'] }}]
-{% for key in repo.keys() | list | difference( ['repo', 'enabled'] ) %}
-{% if repo[key] | type_debug == 'NoneType' %}
-{{ key }}
-{% elif repo[key] | type_debug == 'list' %}
-{{ key }} = {{ repo[key] | join(' ') }}
-{% else %}
-{{ key }} = {{ repo[key] }}
+{% if repo['enabled'] == true %}
+Include = {{ pkg_mgr_var['repos_cfg_dir'] }}/{{ repo['repo'] }}
 {% endif %}
-{% endfor %}
 {% endfor %}

@@ -19,13 +19,17 @@
   register: repo_cfg_files_reg
   changed_when: false
 
+# This is necessary when repository configuration files are idenfitied
+# by file extension.
 - name: There are extraneous repository configuration files
-  when: extra_files_var != []
-  notify: "{{ notify_var }}"
+  when:
+    - extra_files_var != []
+    - ext_var != ''
   block:
 
-    # Write an empty string to the extraneous repository config file
-    # to take advantage of the builtin backup behavior.
+    # Ansible has no module for moving a file, so we write an empty
+    # string to the extraneous repository config file to take advantage
+    # of the builtin backup behavior.
     - name: Backup extraneous repository configuration files
       ansible.builtin.copy:
         content: ''
@@ -51,15 +55,7 @@
 
 - name: Run tasks to template the each repository config file
   ansible.builtin.include_tasks: cfg_sw_ssh_pkg-mgr_template.yml
-  vars:
-    cfg_file_var: >-
-      {{ repos_cfg_dir_var }}/{{ repo_item['repo'] }}{{ ext_var
-                                                        | default }}
-    title_var: >-
-      {{ pkg_mgr_name_pretty_var }} {{ repo_item['repo'] }}
-      Repository Configuration
-    template_file_var: >-
-      {{ pkg_mgr_name_item | regex_replace('^yum$', 'dnf') }}_repo_cfg.j2
-  loop: "{{ repo_list }}"
+  # Use indexed loop for optimal, parallel execution
+  loop: "{{ range( 0, repo_list | length ) | list }}"
   loop_control:
-    loop_var: repo_item
+    loop_var: repo_index

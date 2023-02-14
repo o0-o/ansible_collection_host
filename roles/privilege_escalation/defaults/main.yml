@@ -1,0 +1,20 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Privilege escalation defaults
+#
+########################################################################
+
+# Configure privilege escalation for the Ansible user by default
+priv_user: "{{ ansible_user }}"
+
+# Exclude '' which is hardcoded for the root user. List is in order of
+# preference. By default, doas is preferred to sudo if both are, but if
+# a value is already set, that is preferred.
+priv_methods:
+  - doas
+  - sudo
+
+# An attempt will be made to configure this method if none of the items
+# in priv_methods appear to work.
+fallback_priv_method: sudo

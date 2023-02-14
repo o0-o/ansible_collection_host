@@ -1,0 +1,17 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Run Sudo role dependency
+#
+########################################################################
+
+- name: >-
+    Run the role dependencies for privilege escalation command configuration
+  ansible.builtin.include_role:
+    name: "{{ priv_cmd_dep_item['role'] }}"
+    public: true
+  when:
+    - >-
+        priv_cmd_dep_item['role'] not in ansible_role_names
+        or priv_cmd_dep_item['dupes'] | default(false)
+    - priv_cmd_dep_item['condition'] | default(true)

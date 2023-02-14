@@ -1,0 +1,37 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure sudo for SELinux
+#
+########################################################################
+
+- name: Define the sudo passwordless configuration line with SELinux
+  ansible.builtin.set_fact:
+    sudo_passwordless_adm: >-
+      ALL=(ALL) TYPE=sysadm_t ROLE=sysadm_r NOPASSWD: ALL
+
+- name: Check if the user's SELinux context needs to change
+  community.general.selogin:
+    login: "{{ priv_user }}"
+    seuser: "{{ adm_seuser }}"
+    state: present
+  register: check_user_selinux_context_change_reg
+  become: "{{ not is_root_var }}"
+  check_mode: true
+
+# A user cannot configure its own SELinux context without getting locked
+# out of sudo, so we temporarily switch to root.
+- name: Run tasks to switch to root user temporarily
+  ansible.builtin.include_tasks: cfg_priv_ssh_cmd_sudo_selinux_user.yml
+  when:
+    - priv_user == ansible_user
+    - check_user_selinux_context_change_reg is changed
+
+- name: "Configure the user's SELinux context to {{ adm_seuser }}"
+  community.general.selogin:
+    login: "{{ priv_user }}"
+    seuser: "{{ adm_seuser }}"
+    state: present
+  register: user_selinux_context_change_reg
+  become: "{{ not is_root_var }}"
+  notify: restore selinux contexts

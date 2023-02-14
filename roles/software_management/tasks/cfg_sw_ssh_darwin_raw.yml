@@ -74,4 +74,4 @@
 
 - name: Python is available now, so don't fallback to raw module anymore
   ansible.builtin.set_fact:
-    tasks_file_suffix: ''
+    use_raw: false

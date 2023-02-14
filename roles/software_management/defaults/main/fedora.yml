@@ -1,0 +1,98 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Fedora Linux software management defaults
+#
+########################################################################
+
+# /etc/dnf/dnf.conf
+fedora_dnf_cfg_default:
+  repo_gpgcheck: 0
+fedora_dnf_cfg_add: {}
+fedora_dnf_cfg: >-
+  {{  [ dnf_yum_cfg_common_default,
+        dnf_yum_cfg_common_add,
+        dnf_cfg_default,
+        dnf_cfg_add,
+        fedora_dnf_cfg_default,
+        fedora_dnf_cfg_add ]
+      | combine }}
+# NOTE: No default Fedora repositories suppport repo_gpgcheck
+
+# Default configuration for all DNF repositories in Fedora
+fedora_dnf_repos_cfg_default:
+  method: metalink
+  url: https://mirrors.fedoraproject.org
+  gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch
+fedora_dnf_repos_cfg_add: {}
+fedora_dnf_repos_cfg: >-
+  {{  [ repos_cfg,
+        dnf_yum_repos_cfg_common_default,
+        dnf_yum_repos_cfg_common_add,
+        dnf_repos_cfg_default,
+        dnf_repos_cfg_add,
+        fedora_dnf_repos_cfg_default,
+        fedora_dnf_repos_cfg_add ]
+      | combine }}
+
+# Individual default repositories
+fedora_dnf_repo_fedora:
+  name: Fedora $releasever - $basearch
+  url_vars: 'repo=fedora-$releasever&arch=$basearch'
+  url_path: /linux/releases/$releasever/Everything/$basearch/os/
+  enabled: true
+fedora_dnf_repo_modular:
+  name: Fedora Modular $releasever - $basearch
+  url_vars: 'repo=fedora-modular-$releasever&arch=$basearch'
+  url_path: /linux/releases/$releasever/Modular/$basearch/os/
+  enabled: true
+fedora_dnf_repo_updates:
+  name: Fedora $releasever - $basearch - Updates
+  file: fedora-updates
+  url_vars: 'repo=updates-released-f$releasever&arch=$basearch'
+  url_path: /linux/updates/$releasever/Everything/$basearch/
+  enabled: true
+fedora_dnf_repo_updates_testing:
+  name: Fedora $releasever - $basearch - Test Updates
+  file: fedora-updates-testing
+  url_vars: 'repo=updates-testing-f$releasever&arch=$basearch'
+  url_path: /linux/updates/testing/$releasever/Everything/$basearch/
+fedora_dnf_repo_updates_modular:
+  name: Fedora Modular $releasever - $basearch - Updates
+  file: fedora-updates-modular
+  url_vars: 'repo=updates-released-modular-f$releasever&arch=$basearch'
+  url_path: /linux/updates/$releasever/Modular/$basearch/
+  enabled: true
+fedora_dnf_repo_updates_testing_modular:
+  name: Fedora Modular $releasever - $basearch - Test Updates
+  file: fedora-updates-testing-modular
+  url_vars: 'repo=updates-testing-modular-f$releasever&arch=$basearch'
+  url_path: /linux/updates/testing/$releasever/Modular/$basearch/
+fedora_dnf_repo_cisco_openh264:
+  name: openh264 (From Cisco)
+  file: fedora-cisco-openh264
+  url_vars: 'repo=fedora-cisco-openh264-$releasever&arch=$basearch'
+  url_path: /openh264/$releasever/$basearch/os/
+# NOTE: If 'file' is not set, the key is used. The .repo extension is
+# defined in vars/main/pkg_mgmt.yml. It should not be included here.
+
+fedora_dnf_repos_default:
+  fedora: >-
+    {{ [fedora_dnf_repos_cfg, fedora_dnf_repo_fedora] | combine }}
+  fedora-modular: >-
+    {{ [fedora_dnf_repos_cfg, fedora_dnf_repo_modular] | combine }}
+  updates: >-
+    {{ [fedora_dnf_repos_cfg, fedora_dnf_repo_updates] | combine }}
+  updates-testing: >-
+    {{ [fedora_dnf_repos_cfg, fedora_dnf_repo_updates_testing] | combine }}
+  updates-modular: >-
+    {{ [fedora_dnf_repos_cfg, fedora_dnf_repo_updates_modular] | combine }}
+  updates-testing-modular: >-
+    {{  [ fedora_dnf_repos_cfg,
+          fedora_dnf_repo_updates_testing_modular ]
+        | combine }}
+  fedora-cisco-openh264: >-
+    {{ [fedora_dnf_repos_cfg, fedora_dnf_repo_cisco_openh264] | combine }}
+fedora_dnf_repos_add: {}
+fedora_dnf_repos: >-
+  {{ [fedora_dnf_repos_default, fedora_dnf_repos_add] | combine }}

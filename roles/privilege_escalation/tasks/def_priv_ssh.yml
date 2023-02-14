@@ -1,0 +1,43 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Test and define the privilege escalation method
+#
+########################################################################
+
+# Loop through privilege escalation methods until one appears to work.
+# Skip the remainder of the list on success.
+- name: Run tasks to test privilege escalation methods
+  ansible.builtin.include_tasks: test_priv_ssh{{ tasks_file_suffix }}.yml
+  register: test_priv_loop_reg
+  vars:
+    priv_var: "{{ pre_vars['ansible_become_method']
+                  | default( priv_methods[0] ) }}"
+    ansible_become_method: "{{ item }}" #loop_var will generate warnings
+  when:
+    - priv_user != 'root'
+    - ansible_loop['first'] or test_result_var != item
+  loop: "{{ [priv_var] + priv_methods | difference( [priv_var] ) }}"
+  loop_control:
+    extended: true
+    extended_allitems: false
+
+# If none of the above tests succeeded, try sudo as a last resort. If
+# the current user is root and we are setting up privilege escalation
+# for another user, it's possible that sudo is not installed yet. Use
+# null if the target user is root.
+- name: Define the become method
+  ansible.builtin.set_fact:
+    ansible_become_method: "{{ ansible_become_method_var }}"
+  vars:
+    become_cmd_var: >-
+      {{  [ test_result_var ]
+          | intersect(priv_methods)
+          | default( [fallback_priv_method], true )
+          | first }}
+    ansible_become_method_var: "{{  ( priv_user == 'root' )
+                                    | ternary(none, become_cmd_var) }}"
+  changed_when: >-
+    pre_vars['ansible_become_method'] is undefined
+    or pre_vars['ansible_become_method'] | default != ansible_become_method_var
+  notify: update host inventory variables

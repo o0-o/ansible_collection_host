@@ -1,0 +1,29 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# OpenBSD software management defaults
+#
+########################################################################
+
+openbsd_install_url: https://cdn.openbsd.org/pub/OpenBSD
+openbsd_fw_url: >-
+  http://firmware.openbsd.org/firmware/{{ ansible_distribution_version
+                                          | default(sys_release) }}
+
+# The only configuration for these is /etc/installurl and the -p flag
+# for fw_update.
+openbsd_pkg_cfg: {}
+openbsd_fw_cfg: {}
+openbsd_sys_cfg: {}
+
+# Not setting enabled to true here won't actively disable, but it will
+# prevent the role from touching the configuration. We don't merge in
+# repos_cfgs because no additional values are possible.
+openbsd_pkg_repo:
+  url: "{{ openbsd_install_url }}"
+  enabled: true
+openbsd_fw_repo:
+  url: "{{ openbsd_fw_url }}"
+  enabled: true
+openbsd_sys_repo:
+  enabled: true

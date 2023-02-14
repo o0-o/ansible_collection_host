@@ -1,0 +1,71 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure the connection
+#
+########################################################################
+
+# Assume hosts will respond to ping
+- name: The remote host is reachable from localhost
+  ansible.builtin.command:
+    argv:
+      - ping
+      - -c
+      - 2
+      - "{{ ansible_host }}"
+  register: con_ping_reg
+  changed_when: false
+  failed_when: >-
+    con_ping_reg['rc'] != 0
+    or (  ansible_host == '127.0.0.1'
+          and ansible_port | default('22') | string == '22' )
+  ignore_errors: true
+  delegate_to: 127.0.0.1
+
+- name: Run tasks to test the connection with different users
+  ansible.builtin.include_tasks: test_con_users.yml
+  when:
+    - not use_con
+    - not con_ping_reg is failed
+  loop: "{{ default_adms }}"
+  loop_control:
+    loop_var: adm_item
+
+# See o0_o.network collection for an understanding of the hosts and
+# ifaces variables.
+- name: Run tasks to test the connection with different IPv4 addresses
+  ansible.builtin.include_tasks: test_con_oses.yml
+  register: test_con_ip4_reg
+  vars:
+    con_ip4s_var: "{{ ( hosts[inventory_hostname]
+                        | default( hosts[inventory_hostname_short] )
+                        | default({}) ).values()
+                      | list
+                      | union( ifaces | default([]) )
+                      | selectattr('ip4', 'defined')
+                      | map(attribute='ip4')
+                      | sort
+                      | unique }}"
+    default_adms: "{{ ( ansible_user_var != '' )
+                      | ternary(  [ansible_user_var]
+                                  + default_adms
+                                    | difference( [ansible_user_var] ),
+                                  default_adms ) }}"
+  when:
+    - test_con_ip4_reg is undefined
+    - not use_con
+    - con_ping_reg is failed
+  loop: "{{ con_ip4s_var }}"
+  loop_control:
+    loop_var: con_ip4_var
+
+# The host is not reachable. Interrogate Vagrant in case the host is a
+# virtual machine on local NAT.
+- name: Run tasks to test the connection with parameters from Vagrant
+  ansible.builtin.include_tasks: test_con_vagrant.yml
+  when: not use_con
+
+- name: A connection was successfully configured
+  ansible.builtin.assert:
+    that: use_con
+    quiet: true

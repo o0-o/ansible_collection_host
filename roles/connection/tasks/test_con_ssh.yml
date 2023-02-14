@@ -9,11 +9,15 @@
 # positives where SSH doesn't explicitly fail on systems that should use
 # network_cli. In those cases, SSH commands will appear to succeed but
 # will actually have no effect and produce no output.
-- name: Test the connection (SSH)
+- name: Test the connection (SSH) [YUBIKEY PRESS]
   ansible.builtin.raw: echo 0
   register: test_con_reg
   changed_when: false
-  failed_when: test_con_reg['stdout_lines'][0] | default != '0'
+  until: test_con_reg['stdout_lines'][0] | default == '0'
   ignore_errors: true
   ignore_unreachable: true
-  timeout: 10
+  timeout: "{{ con_timeout }}"
+  retries: "{{ con_retries }}"
+  when: >-
+    test_con_reg['unreachable'] | default(false)
+    or test_con_reg['failed'] | default(true)

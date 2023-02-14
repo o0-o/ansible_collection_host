@@ -4,27 +4,28 @@ YUM or DNF repository configuration file
 
 #}
 {{ header_var }}
-
-[{{ repo_item['repo'] }}]
-{% if repo_item['method'] == 'baseurl' %}
-baseurl={{ repo_item['url'] }}{{ repo_item['url_path'] }}
-{% elif repo_item['method'] == 'mirrorlist' %}
-mirrorlist={{ [ repo_item['url'],
+[{{ repo_var['repo'] }}]
+{% if repo_var['method'] == 'baseurl' %}
+baseurl={{ repo_var['url'] }}{{ repo_var['url_path'] }}
+{% elif repo_var['method'] == 'mirrorlist' %}
+mirrorlist={{ [ repo_var['url'],
                 '/',
-                ( pkg_mgr_name_item == 'dnf' )
+                ( pkg_mgr_name_var == 'dnf' )
                 | ternary('mirrorlist', '' ),
                 '?',
-                repo_item['url_vars'] ]
+                repo_var['url_vars'] ]
               | join }}
 {% else %}
-metalink={{ repo_item['url'] }}/metalink?{{ repo_item['url_vars'] }}
+metalink={{ repo_var['url'] }}/metalink?{{ repo_var['url_vars'] }}
 {% endif %}
-{% for key in repo_item.keys()
+{% for key in repo_var.keys()
               | list
               | difference( [ 'repo',
                               'method',
                               'url',
                               'url_vars',
-                              'url_path' ] ) %}
-{{ key }}={{ repo_item[key] }}
+                              'url_path',
+                              'file' ] )
+              | sort %}
+{{ key }}={{ repo_var[key] }}
 {% endfor %}

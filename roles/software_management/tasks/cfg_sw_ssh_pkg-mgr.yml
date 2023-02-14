@@ -3,30 +3,33 @@
 #
 # Configure package management on an SSH host
 #
+# Many of the variables used here are defined in the parent
+# include_tasks task in cfg_sw_ssh.yml.
+#
 ########################################################################
 
+# Use a list for easier manipulation in templates. Dict is preferred
+# for the inventory where it prevents duplicate repository definitions.
 - name: Define a list of repositories
   ansible.builtin.set_fact:
     repo_list: "{{ repo_list | default([]) | union( [repo_var] ) }}"
   vars:
-    def_repo_precedent_list_var:
-      - repo: "{{ repo_item['key'] }}"
-      - "{{ repos_cfgs | default({}, true) }}"
-      - "{{ pkg_mgr_repos_cfgs[pkg_mgr_name_item] | default({}, true) }}"
-      - "{{ os_repos_cfgs[os_name][pkg_mgr_name_item]
-            | default({}, true) }}"
-      - "{{ repo_item['value'] | default({}, true) }}"
-    repo_var: "{{ def_repo_precedent_list_var | combine }}"
-  loop: "{{ repos[os_name][pkg_mgr_name_item] | dict2items }}"
+    repo_combine_list_var:
+      - repo: "{{ repo_item['key'] }}" #'name' is taken so we use repo
+      - file: "{{ repo_item['key'] }}" #key is used for file by default
+      - "{{ repo_item['value'] }}"
+    repo_var: "{{ repo_combine_list_var | combine }}" #consolidate
+  loop: "{{ repos[pkg_mgr_name_var] | default({}) | dict2items }}"
   loop_control:
     loop_var: repo_item
+    label: "{{ repo_item['name'] | default( repo_item['key'] ) }}"
 
 # Currently this only applies to macOS where Homebrew must be installed.
 - name: Run tasks to configure the package manager specifically
   ansible.builtin.include_tasks: "{{ tasks_file_var }}"
   vars:
     tasks_file_var: "tasks/\
-      cfg_sw_ssh_pkg-mgr_{{ pkg_mgr_name_item }}{{ tasks_file_suffix }}.yml"
+      cfg_sw_ssh_pkg-mgr_{{ pkg_mgr_name_var }}{{ tasks_file_suffix }}.yml"
   when: lookup('ansible.builtin.fileglob', tasks_file_var) != []
 
 - name: Run tasks to configure the package manager's main config file
@@ -34,14 +37,13 @@
     file: "cfg_sw_ssh_pkg-mgr_template{{ tasks_file_suffix }}.yml"
   vars:
     cfg_file_var: "{{ pkg_mgr_var['cfg_file'] }}"
+    pkg_mgr_cfg_var: "{{ pkg_mgr_cfgs_var[pkg_mgr_name_var] }}"
+    # YUM and DNF share the same template.
+    template_file_var: >-
+      {{ pkg_mgr_name_var | regex_replace('^yum$', 'dnf') }}_cfg.j2
+    # Text formatting
     title_var: >-
       {{ pkg_mgr_name_pretty_var }} Package Manager Configuration
-    pkg_mgr_cfg_var: >-
-      {{  [ pkg_mgr_cfgs[pkg_mgr_name_item] | default({}),
-            os_pkg_mgr_cfgs[pkg_mgr_name_item] | default({}) ]
-          | combine }}
-    template_file_var: >-
-      {{ pkg_mgr_name_item | regex_replace('^yum$', 'dnf') }}_cfg.j2
   when: cfg_file_var is defined
 
 # Only runs if the package manager configures all repositories in a
@@ -51,9 +53,10 @@
     file: "cfg_sw_ssh_pkg-mgr_template{{ tasks_file_suffix }}.yml"
   vars:
     cfg_file_var: "{{ pkg_mgr_var['repos_cfg_file'] }}"
+    template_file_var: "{{ pkg_mgr_name_var }}_repos_cfg.j2"
+    # Text formatting
     title_var: >-
       {{ pkg_mgr_name_pretty_var }} Repositories Configuration
-    template_file_var: "{{ pkg_mgr_name_item }}_repos_cfg.j2"
   when: cfg_file_var is defined
 
 # Only runs if the package manager configures repositories in separate
@@ -62,17 +65,43 @@
   ansible.builtin.include_tasks:
     file: "cfg_sw_ssh_pkg-mgr_repos{{ tasks_file_suffix }}.yml"
   vars:
+    # General
     repos_cfg_dir_var: "{{ pkg_mgr_var['repos_cfg_dir'] }}"
-    ext_var: ".{{ pkg_mgr_var['repos_cfg_ext'] | default(omit, true) }}"
-    extra_files_re_var: ".*{{ ext_var | default | regex_escape }}$"
+    # Add the period to the file extension here if applicable.
+    ext_var: >-
+      {{  ( pkg_mgr_var['repos_cfg_ext'] is defined )
+          | ternary('.' + pkg_mgr_var['repos_cfg_ext'] | default, '') }}
+    # A list of configuration files including extension.
+    valid_files_var: "{{  repo_list
+                          | map(attribute='file')
+                          | product( [ext_var] )
+                          | map('join') }}"
+    # Regex used to identify configuration files
+    extra_files_re_var: ".*{{ ext_var | regex_escape }}$"
+    # Files that match the regex abbove that are not included in the
+    # valid file list (the registered variable here is defined later in
+    # this included tasks file).
     extra_files_var: >-
       {{  repo_cfg_files_reg['stdout_lines']
           | map('basename')
           | select('match', extra_files_re_var)
-          | difference( repos[os_name][pkg_mgr_name_item].keys()
-                        | list
-                        | product( [ ext_var | default ] )
-                        | map('join') ) }}
+          | difference(valid_files_var) }}
+    # The full path to an extraneous configuration file (the loop
+    # variable here is defined later in this included tasks file).
     extra_file_path_var: >-
       {{ repos_cfg_dir_var }}/{{ extra_file_item}}
+    # Specific to the loop item
+    repo_var: "{{ repo_list[repo_index] }}"
+    cfg_file_var: >-
+      {{ repos_cfg_dir_var }}/{{ repo_var['file'] }}{{ ext_var }}
+    template_file_var: >-
+      {{ pkg_mgr_name_var | regex_replace('^yum$', 'dnf') }}_repo_cfg.j2
+    # Text formatting
+    title_var: >-
+      {{ pkg_mgr_name_pretty_var }} {{ repo_var['repo'] | title }}
+      Repository Configuration
   when: repos_cfg_dir_var is defined
+
+- name: Reset the repository list
+  ansible.builtin.set_fact:
+    repo_list: []

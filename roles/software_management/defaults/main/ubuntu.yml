@@ -1,0 +1,48 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Ubuntu Linux software management defaults
+#
+########################################################################
+
+# By default this config is empty and we rely on OS defaults for
+# Aptitude.
+ubuntu_apt_cfg_default: {}
+ubuntu_apt_cfg_add: {}
+ubuntu_apt_cfg: >-
+  {{  [ apt_cfg_default,
+        apt_cfg_add,
+        ubuntu_apt_cfg_default,
+        ubuntu_apt_cfg_add ]
+      | combine }}
+
+# Configuration for all Aptitude repositories in Ubuntu
+ubuntu_apt_repos_cfg_default:
+  url: https://mirrors.edge.kernel.org/ubuntu
+  security: false #specific to Debian, doesn't impact security of Ubuntu
+ubuntu_apt_repos_cfg_add:
+ubuntu_apt_repos_cfg: "{{ [ repos_cfg,
+                            apt_repos_cfg_default,
+                            apt_repos_cfg_add,
+                            ubuntu_apt_repos_cfg_default,
+                            ubuntu_apt_repos_cfg_add ]
+                          | combine }}"
+
+# Individual default repositories
+ubuntu_apt_main:
+  enabled: true
+ubuntu_apt_restricted:
+  enabled: true
+ubuntu_apt_universe: {}
+ubuntu_apt_multiverse: {}
+
+# Combine the shared repository configuration into each Aptitude
+# repository's individual configuration.
+ubuntu_apt_repos_default:
+  main: "{{ [ubuntu_apt_repos_cfg, ubuntu_apt_main] | combine }}"
+  restricted: "{{ [ubuntu_apt_repos_cfg, ubuntu_apt_restricted] | combine }}"
+  universe: "{{ [ubuntu_apt_repos_cfg, ubuntu_apt_universe] | combine }}"
+  multiverse: "{{ [ubuntu_apt_repos_cfg, ubuntu_apt_multiverse] | combine }}"
+ubuntu_apt_repos_add: {}
+ubuntu_apt_repos: >-
+  {{ [ubuntu_apt_repos_default, ubuntu_apt_repos_add] | combine }}

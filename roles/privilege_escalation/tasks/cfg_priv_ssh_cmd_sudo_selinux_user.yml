@@ -1,0 +1,53 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Create a temporary user for SELinux configuration
+#
+########################################################################
+
+- name: Add SSH key to the root user
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ ssh_pub_key }}"
+    state: present
+  become: true
+  register: root_ssh_key_reg
+
+- name: Read sshd_config
+  ansible.builtin.slurp:
+    src: /etc/ssh/sshd_config
+  become: true
+  register: sshd_config_reg
+
+- name: Enable SSH login for root
+  ansible.builtin.blockinfile:
+    block: |
+      UsePAM yes
+      PermitRootLogin prohibit-password
+    path: /etc/ssh/sshd_config
+    insertbefore: BOF
+    owner: root
+    group: "{{ root_grp }}"
+    mode: 0644
+    backup: true
+    validate: /usr/sbin/sshd -T -f %s
+  become: true
+  register: cfg_sshd_config_reg
+
+- name: Reload the sshd service
+  ansible.builtin.service:
+    name: sshd
+    state: reloaded
+  become: true
+
+- name: Set Ansible user to root temporarily
+  ansible.builtin.set_fact:
+    ansible_user: root
+  register: tmp_root_reg
+
+- name: Reset connection to the host
+  ansible.builtin.meta: reset_connection
+
+- name: Root is working [YUBIKEY PRESS]
+  ansible.builtin.ping:
+  become: true

@@ -4,7 +4,6 @@ FreeBSD package manager configuration file
 
 #}
 {{ header_var }}
-
-{% for key in pkg_mgr_cfg_var.keys() | list %}
+{% for key in pkg_mgr_cfg_var.keys() | list | sort %}
 {{ key }}: {{ pkg_mgr_cfg_var[key] | to_nice_json }}
 {% endfor %}

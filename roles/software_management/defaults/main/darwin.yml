@@ -1,0 +1,32 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# macOS software management configuration defaults
+#
+########################################################################
+
+# No configuration is supported for these.
+darwin_homebrew_cfg: {}
+macos_softwareupdate_cfg: {}
+
+# Treat taps as repositories.
+darwin_homebrew_repo_cask:
+  enabled: true
+darwin_homebrew_repo_cask_fonts:
+  enabled: true
+darwin_homebrew_repo_cask_drivers:
+  enabled: true
+darwin_homebrew_repo_core:
+  enabled: true
+darwin_homebrew_repo_services:
+  enabled: true
+
+darwin_homebrew_repos_default:
+  homebrew/cask: "{{ darwin_homebrew_repo_cask }}"
+  homebrew/cask-fonts: "{{ darwin_homebrew_repo_cask_fonts }}"
+  homebrew/cask-drivers: "{{ darwin_homebrew_repo_cask_drivers }}"
+  homebrew/core: "{{ darwin_homebrew_repo_core }}"
+  homebrew/services: "{{ darwin_homebrew_repo_services }}"
+darwin_homebrew_repos_add: {}
+darwin_homebrew_repos: >-
+  {{ [darwin_homebrew_repos_default, darwin_homebrew_repos_add] | combine }}

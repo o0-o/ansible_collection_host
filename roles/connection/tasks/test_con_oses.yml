@@ -5,19 +5,15 @@
 #
 ########################################################################
 
-- name: Host is reachable so test the connection
-  block:
+- name: Run tasks to test the connection
+  ansible.builtin.include_tasks: test_con.yml
 
-    - name: Run tasks to test the connection
-      ansible.builtin.include_tasks: test_con.yml
-
-  # Host is reachable but the connection failed so try
-  # network_cli
-  rescue:
-
-    - name: Run tasks to test the connection (RouterOS)
-      ansible.builtin.include_tasks: test_con.yml
-      vars:
-        ansible_connection: ansible.netcommon.network_cli
-        ansible_network_os: community.network.routeros
-        ansible_network_cli_ssh_type: libssh
+- name: Run tasks to test the connection (RouterOS)
+  ansible.builtin.include_tasks: test_con.yml
+  vars:
+    ansible_connection: ansible.netcommon.network_cli
+    ansible_network_os: community.network.routeros
+    ansible_network_cli_ssh_type: libssh
+  when:
+    - use_libssh
+    - not use_con

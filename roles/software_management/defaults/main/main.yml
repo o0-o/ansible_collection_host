@@ -1,0 +1,35 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Software defaults
+#
+########################################################################
+
+# Safe to use software management
+use_sw_mgmt: false
+
+# Universally shared repository configuration defaults
+repos_cfg:
+  enabled: false
+
+# Default architectures
+archlinux_arch: x86_64
+centos_arch: x86_64
+debian_arch: amd64
+fedora_arch: x86_64
+freebsd_arch: amd64
+openbsd_arch: amd64
+rocky_arch: x86_64
+ubuntu_arch: amd64
+# NOTE: x86_64 and amd64 are the same but each OS prefers one
+# abbreviation over the other. That is reflected here.
+
+# Values here relate to mirror paths.
+archlinux_release: latest
+centos_release: '7.9.2009'
+debian_release: '11.4.0'
+fedora_release: '36'
+freebsd_release: '13.1'
+openbsd_release: '7.1'
+rocky_release: '8.7'
+ubuntu_release: 'jammy' #22.04 LTS

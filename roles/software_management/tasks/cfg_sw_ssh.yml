@@ -5,58 +5,66 @@
 #
 ########################################################################
 
-- name: Run tasks to satisfy role dependencies
-  ansible.builtin.include_tasks: cfg_sw_ssh_deps.yml
+- name: Run software management configuration dependencies
+  ansible.builtin.include_tasks: cfg_sw_ssh_dep.yml
+  loop: "{{ cfg_sw_ssh_deps }}"
+  loop_control:
+    loop_var: sw_mgmt_dep_item
+
+- name: >-
+    Use OS default package manager repository configurations if none are
+    defined
+  ansible.builtin.set_fact:
+    repos: "{{ os_pkg_mgr_repos[os_name] }}"
+  changed_when: true
+  when: repos is undefined
+  notify: update host inventory variables
 
 # Currently this only applies to macOS where Xcode must be installed.
 - name: Run tasks to configure software based on the system if necessary
   ansible.builtin.include_tasks: "{{ tasks_file_var }}"
   vars:
+    sys_var: "{{ ansible_system | default(sys) | lower }}"
     tasks_file_var: >-
-      tasks/cfg_sw_ssh_{{ ansible_system
-                          | default(sys)
-                          | lower }}{{ tasks_file_suffix }}.yml
+      tasks/cfg_sw_ssh_{{ sys_var }}{{ tasks_file_suffix }}.yml
   when: lookup('ansible.builtin.fileglob', tasks_file_var) != []
 
+# Configure package manager and repositories
 - name: Run tasks to configure each package manager
   ansible.builtin.include_tasks: cfg_sw_ssh_pkg-mgr.yml
   vars:
-    repos_var: "{{ repos[os_name] | default({}) }}"
-    pkg_mgr_var: "{{ pkg_mgmt[pkg_mgr_name_item] }}"
+    # General
+    pkg_mgr_cfgs_var: "{{ os_pkg_mgr_cfgs[os_name] }}"
+    pkg_mgr_names_var: "{{ pkg_mgr_cfgs_var.keys() | list }}"
+    # Specific to the loop item
+    pkg_mgr_name_var: "{{ pkg_mgr_names_var[pkg_mgr_name_index] }}"
+    pkg_mgr_var: "{{ pkg_mgmt[pkg_mgr_name_var] }}"
+    # Text formatting
     pkg_mgr_name_pretty_var: >-
-      {{  ( pkg_mgr_name_item in ['yum', 'dnf'] )
-          | ternary(  pkg_mgr_name_item | upper,
-                      pkg_mgr_name_item | title ) }}
+      {{  ( pkg_mgr_name_var in ['yum', 'dnf'] )
+          | ternary(  pkg_mgr_name_var | upper,
+                      pkg_mgr_name_var | title ) }}
     header_var: "\
       {{  ( title_var + '\n \n' + default_comment_header )
           | wordwrap(70)
           | comment(  prefix=default_comment_prefix,
                       postfix=default_comment_postfix ) }}"
-    notify_var: initialize package manager
-  loop: "{{ repos_var.keys() | list }}"
+  # Use indexed loop for optimal, parallel execution
+  loop: "{{ range( 0, pkg_mgr_names_var | length ) | list }}"
   loop_control:
-    loop_var: pkg_mgr_name_item
+    loop_var: pkg_mgr_name_index
 
-# Initialize package mangers if any configuration was changed.
-- name: Flush handers
-  ansible.builtin.meta: flush_handlers
+- name: Initialize package managers if their configurations were changed
+  ansible.builtin.include_tasks: init_pkg-mgr_ssh.yml
+  when: cfg_pkg_mgr_names | default([]) != []
+  vars:
+    pkg_mgr_name_var: "{{ cfg_pkg_mgr_names[cfg_pkg_mgr_name_index] }}"
+    pkg_mgr_var: "{{ pkg_mgmt[pkg_mgr_name_var] }}"
+  # Use indexed loop for optimal, parallel execution
+  loop: "{{ range( 0, cfg_pkg_mgr_names | length ) | list }}"
+  loop_control:
+    loop_var: cfg_pkg_mgr_name_index
 
-- name: Record completion of the software management configuration role
+- name: Reset the list of configured package managers
   ansible.builtin.set_fact:
-    roles_completed: "{{  roles_completed
-                          | default([])
-                          | union( [ansible_role_name] ) }}"
-
-# Mandatory access control configuration for privilege escalation
-# may require that dependencies be installed. The
-# o0_o.host.privilege_escalation role will not perform that
-# configuration unless this role is included in the roles_completed
-# list. If a Python interpreter still needs to be configured or
-# installed, the o0_o.host.python_interpreter role will take care of
-# this later.
-- name: Finish configuring privilege escalation
-  ansible.builtin.include_role:
-    name: o0_o.host.privilege_escalation
-    allow_duplicates: true
-    public: true
-  when: tasks_file_suffix == ''
+    cfg_pkg_mgr_names: []

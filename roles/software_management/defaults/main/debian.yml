@@ -1,0 +1,46 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Debian Linux software management defaults
+#
+########################################################################
+
+# By default this config is empty and we rely on OS defaults for
+# Aptitude.
+debian_apt_cfg_default: {}
+debian_apt_cfg_add: {}
+debian_apt_cfg: >-
+  {{  [ apt_cfg_default,
+        apt_cfg_add,
+        debian_apt_cfg_default,
+        debian_apt_cfg_add ]
+      | combine }}
+
+# Configuration for all Aptitude repositories in Debian
+debian_apt_repos_cfg_default:
+  url: https://deb.debian.org/debian
+  security: true #this is specific to Debian
+debian_apt_repos_cfg_add:
+debian_apt_repos_cfg: "{{ [ repos_cfg,
+                            apt_repos_cfg_default,
+                            apt_repos_cfg_add,
+                            debian_apt_repos_cfg_default,
+                            debian_apt_repos_cfg_add ]
+                          | combine }}"
+
+# Individual default repositories
+debian_apt_repo_main:
+  enabled: true
+debian_apt_repo_non_free:
+  enabled: true
+debian_apt_repo_contrib: {}
+
+# Merge the shared repository configuration into each Aptitude
+# repository's individual configuration.
+debian_apt_repos_default:
+  main: "{{ [debian_apt_repos_cfg, debian_apt_repo_main] | combine }}"
+  contrib: "{{ [debian_apt_repos_cfg, debian_apt_repo_contrib] | combine }}"
+  non-free: "{{ [debian_apt_repos_cfg, debian_apt_repo_non_free] | combine }}"
+debian_apt_repos_add: {}
+debian_apt_repos: >-
+  {{ [debian_apt_repos_default, debian_apt_repos_add] | combine }}

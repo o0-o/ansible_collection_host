@@ -21,6 +21,14 @@ sudo_cfg_subdir: sudoers.d
 sudo_cfg_subdir_mode: 0750
 sudo_cfg_subdir_file_mode: 0440
 visudo_bin: /usr/sbin/visudo
+sudo_passwordless_adm: 'ALL=(ALL) NOPASSWD: ALL'
 
-# selinux
-adm_seuser: staff_u
+# Dependencies
+cfg_priv_ssh_deps:
+  - role: o0_o.host.facts
+cfg_priv_ssh_cmd_deps:
+  - role: o0_o.host.software_management
+  - role: o0_o.host.python_interpreter
+cfg_priv_ssh_cmd_sudo_deps:
+  - role: o0_o.host.mandatory_access_control
+    condition: "{{ not use_mac | default(false) }}"

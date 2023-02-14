@@ -1,0 +1,88 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Software variables
+#
+########################################################################
+
+# Dependencies
+cfg_sw_ssh_deps:
+  - role: o0_o.host.privilege_escalation
+  - role: o0_o.host.time
+
+# Default architectures by operating system. See defaults/main/main.yml
+arches:
+  archlinux: "{{ archlinux_arch }}"
+  centos: "{{ centos_arch }}"
+  debian: "{{ debian_arch }}"
+  fedora: "{{ fedora_arch }}"
+  freebsd: "{{ freebsd_arch }}"
+  openbsd: "{{ openbsd_arch }}"
+  rocky: "{{ rocky_arch }}"
+  ubuntu: "{{ ubuntu_arch }}"
+
+# Default releases by operating system. See defaults/main/main.yml
+releases:
+  archlinux: "{{ archlinux_release }}"
+  centos: "{{ centos_release }}"
+  debian: "{{ debian_release }}"
+  fedora: "{{ fedora_release }}"
+  freebsd: "{{ freebsd_release }}"
+  openbsd: "{{ openbsd_release }}"
+  rocky: "{{ rocky_release }}"
+  ubuntu: "{{ ubuntu_release }}"
+
+# Package manager configurations by operating system
+os_pkg_mgr_cfgs:
+  archlinux:
+    pacman: "{{ archlinux_pacman_cfg }}"
+  centos:
+    yum: "{{ centos_yum_cfg }}"
+  darwin:
+    homebrew: "{{ darwin_homebrew_cfg }}"
+    macos_softwareupdate: "{{ macos_softwareupdate_cfg }}"
+  debian:
+    apt: "{{ debian_apt_cfg }}"
+  fedora:
+    dnf: "{{ fedora_dnf_cfg }}"
+  freebsd:
+    freebsd_pkg: "{{ freebsd_pkg_cfg }}"
+    freebsd_update: "{{ freebsd_update_cfg }}"
+  openbsd:
+    openbsd_pkg: "{{ openbsd_pkg_cfg }}"
+    openbsd_fw: "{{ openbsd_fw_cfg }}"
+    openbsd_sys: "{{ openbsd_sys_cfg }}"
+  rocky:
+    dnf: "{{ rocky_dnf_cfg }}"
+  ubuntu:
+    apt: "{{ ubuntu_apt_cfg }}"
+
+# Repository configurations consolidated by OS and package manager
+os_pkg_mgr_repos:
+  archlinux:
+    pacman: "{{ archlinux_pacman_repos }}"
+  centos:
+    yum: "{{ centos_yum_repos }}"
+  darwin:
+    homebrew: "{{ darwin_homebrew_repos }}"
+    macos_softwareupdate: {} #Not applicable
+  debian:
+    apt: "{{ debian_apt_repos }}"
+  fedora:
+    dnf: "{{ fedora_dnf_repos }}"
+  freebsd:
+    freebsd_pkg: "{{ freebsd_pkg_repos }}"
+    freebsd_upate: {} #Not applicable
+  openbsd:
+    openbsd_pkg:
+      openbsd_repo: "{{ openbsd_pkg_repo }}"
+    openbsd_fw:
+      openbsd_fw_repo: "{{ openbsd_fw_repo }}"
+    openbsd_sys:
+      openbsd_sys_repo: "{{ openbsd_sys_repo }}"
+  rocky:
+    dnf: "{{ rocky_dnf_repos }}"
+  ubuntu:
+    apt: "{{ ubuntu_apt_repos }}"
+
+# See defaults/main/ for package manager and repository configurations.

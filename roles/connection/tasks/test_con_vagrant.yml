@@ -8,10 +8,13 @@
 # There are edge cases where minimal version of some operating systems
 # only have which or only have command, so we try both.
 - name: Vagrant is available on localhost
-  ansible.builtin.shell:
-    cmd: which vagrant || command -v vagrant
+  ansible.builtin.command:
+    argv:
+      - vagrant
+      - --version
   changed_when: false
   delegate_to: 127.0.0.1
+  run_once: true
 
 # Look for Vagrant SSH configuration under FQDN but fall back to
 # short hostname.

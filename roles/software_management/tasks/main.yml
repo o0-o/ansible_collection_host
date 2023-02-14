@@ -9,3 +9,7 @@
 - name: Run tasks to configure software management on the host
   ansible.builtin.include_tasks: cfg_sw_ssh.yml
   when: ansible_connection == 'ssh'
+
+- name: It is safe to use software management
+  ansible.builtin.set_fact:
+    use_sw_mgmt: true

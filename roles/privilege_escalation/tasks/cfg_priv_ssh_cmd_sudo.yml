@@ -1,0 +1,78 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure sudo as the privilege escalation method
+#
+########################################################################
+
+- name: Run sudo role dependencies
+  ansible.builtin.include_tasks: cfg_priv_ssh_cmd_sudo_dep.yml
+  loop: "{{ cfg_priv_ssh_cmd_sudo_deps }}"
+  loop_control:
+    loop_var: sudo_dep_item
+
+# This should only have an effect if we are running as root and
+# priv_user is not the Ansible user.
+- name: Install Sudo
+  ansible.builtin.package:
+    name: sudo
+    state: present
+  when: is_root_var
+
+- name: Get the Sudo version
+  ansible.builtin.command:
+    argv:
+      - sudo
+      - --version
+  changed_when: false
+  register: sudo_vers_reg
+
+- name: Create sudoers.d subdirectory
+  ansible.builtin.file:
+    path: "{{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}"
+    state: directory
+    mode: "{{ sudo_cfg_subdir_mode }}"
+  become: "{{ not is_root_var }}"
+
+# Use @ include prefix beginning with version 1.9.1
+# https://github.com/sudo-project/sudo/releases/tag/SUDO_1_9_1
+- name: Configure sudoers.d inclusion in sudoers
+  ansible.builtin.lineinfile:
+    path: "{{ sudo_cfg_path }}/{{ sudo_cfg_file }}"
+    line: >-
+      {{ sudo_incl_pfx_var }}includedir
+      {{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}
+    state: present
+    backup: true
+    validate: "{{ visudo_bin }} -cf %s"
+  become: "{{ not is_root_var }}"
+  vars:
+    sudo_vers_var: >-
+      {{ sudo_vers_reg['stdout_lines'][0] | split(' ') | last }}
+    sudo_incl_pfx_var: "{{  ( sudo_vers_var is version('1.9.1', '>=') )
+                            | ternary('@', '#') }}"
+
+- name: Run tasks to configure the Ansible user with SELinux context
+  ansible.builtin.include_tasks: cfg_priv_ssh_cmd_sudo_selinux.yml
+  when: mac | default == 'selinux'
+
+- name: Configure user with passwordless sudo privileges
+  ansible.builtin.template:
+    src: sudoer_user.j2
+    dest: "{{ sudo_cfg_path }}/{{ sudo_cfg_subdir }}/{{ priv_user }}"
+    owner: root
+    group: "{{ root_grp }}"
+    mode: "{{ sudo_cfg_subdir_file_mode }}"
+    validate: "{{ visudo_bin }} -cf %s"
+  become: "{{ not is_root_var }}"
+  vars:
+    title_var: "Sudo configuration for {{ priv_user }}"
+    header_var: "\
+      {{  ( title_var + '\n \n' + default_comment_header )
+          | wordwrap(70)
+          | comment(  prefix=default_comment_prefix,
+                      postfix=default_comment_postfix ) }}"
+
+- name: Run tasks to cleanup after SELinux user configuration
+  ansible.builtin.include_tasks: cfg_priv_ssh_cmd_sudo_selinux_cleanup.yml
+  when: tmp_root_reg is defined
