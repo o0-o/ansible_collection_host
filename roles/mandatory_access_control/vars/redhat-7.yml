@@ -1,0 +1,14 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml
+#
+# Mandatory access control variables for RHEL and CentOS 7
+#
+########################################################################
+
+mac: selinux
+ansible_mac_deps:
+  - libselinux
+  - selinux-policy
+  - selinux-policy-targeted
+  - policycoreutils
+  - policycoreutils-python

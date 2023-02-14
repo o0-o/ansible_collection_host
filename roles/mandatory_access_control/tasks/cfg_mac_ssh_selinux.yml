@@ -1,0 +1,20 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure SELinux
+#
+########################################################################
+
+- name: Enable SELinux and set to enforcing
+  ansible.posix.selinux:
+    policy: targeted
+    state: permissive
+  become: true
+
+- name: >-
+    Add privilege escalation roles to post-run list on initial SELinux
+    configuration
+  ansible.builtin.set_fact:
+    mac_post_roles:
+      - o0_o.host.privilege_escalation
+  when: pre_vars['mac'] | default != 'selinux'

@@ -1,0 +1,15 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml
+#
+# Mandatory access control variables for Red Hat Linux distributions
+#
+########################################################################
+
+mac: selinux
+ansible_mac_deps:
+  - libselinux
+  - selinux-policy
+  - selinux-policy-targeted
+  - python3-libselinux
+  - policycoreutils
+  - policycoreutils-python-utils

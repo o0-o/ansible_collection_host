@@ -1,0 +1,71 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure AppArmor
+#
+########################################################################
+
+- name: Enable AppArmor
+  ansible.builtin.systemd:
+    name: apparmor.service
+    state: started
+    enabled: true
+  become: true
+
+- name: TODO configure bootloader on Arch Linux and Raspberry Pi for AppArmor
+  block:
+
+    - name: Get AppArmor status
+      ansible.builtin.command: apparmor_status
+      become: true
+      register: apparmor_status_reg
+      changed_when: false
+      failed_when: >-
+        apparmor_status_reg['stdout_lines'][0] != 'apparmor module is loaded.'
+        or apparmor_status_reg['stdout_lines'][1]
+        | regex_search('^\d+ profiles are loaded\.$')
+        == ''
+        or apparmor_status_reg['stdout_lines'][2]
+        | regex_search('^\d+ profiles are in enforce mode\.$')
+        == ''
+        or apparmor_status_reg['rc'] != 0
+
+    # command module kills glob so we use shell in this case
+    - name: Set AppArmor to enforcing
+      ansible.builtin.shell: aa-enforce /etc/apparmor.d/*
+      become: true
+      register: aa_enforce_reg
+      vars:
+        loaded_profs_var: >-
+          {{ apparmor_status_reg['stdout_lines'][1] | split(' ') | first }}
+        enforced_profs_var: >-
+          {{ apparmor_status_reg['stdout_lines'][2] | split(' ') | first }}
+      when:
+        - loaded_profs_var != enforced_profs_var
+        - not ansible_check_mode
+
+    - name: The previous task would have resulted in a change (check mode)
+      ansible.builtin.debug:
+        msg: App armor would have enforced some profiles.
+      changed_when: true
+      when: ansible_check_mode
+
+  rescue:
+
+    - debug:
+        msg: >-
+          TODO Configure bootloader on Arch Linux and Raspberry Pi for
+          AppArmor.
+
+    - set_fact:
+        mac:
+      changed_when: true
+      notify: update host inventory variables
+
+    # Raspberry Pi: add 'lsm=apparmor' to /boot/cmdline.txt
+
+    # Arch: add 'apparmor=1 lsm=lockdown,yama,apparmor' to
+    # GRUB_CMDLINE_LINUX_DEFAULT in /etc/default/grub, run grub-mkconfig
+    # --output /boot/grub/grub.cfg
+
+    # Bootloader should be its own role

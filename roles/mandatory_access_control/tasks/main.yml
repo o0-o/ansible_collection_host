@@ -1,0 +1,24 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define and configure the mandatory access control system on the host
+#
+########################################################################
+
+- name: Initialize/reset the post-run role list
+  ansible.builtin.set_fact:
+    mac_post_roles: []
+
+- name: Run tasks to configure mandatory access control on an SSH host
+  ansible.builtin.include_tasks: cfg_mac_ssh.yml
+  when: ansible_connection == 'ssh'
+
+- name: Run mandatory access control post-run roles
+  ansible.builtin.include_role:
+    name: "{{ mac_post_role_item }}"
+    allow_duplicates: true
+    public: true
+  when: mac_post_role_item not in ansible_parent_role_names | default([])
+  loop: "{{ mac_post_roles | default([]) }}"
+  loop_control:
+    loop_var: mac_post_role_item

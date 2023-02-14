@@ -1,0 +1,12 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Mandatory Access Control configuration dependencies
+#
+########################################################################
+
+- name: Run role dependencies for mandatory access control
+  ansible.builtin.include_role:
+    name: "{{ cfg_mac_ssh_dep_item }}"
+    public: true
+  when: use_sw_mgmt | default(false) == false
