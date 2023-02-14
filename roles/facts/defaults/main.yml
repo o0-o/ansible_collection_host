@@ -5,6 +5,7 @@
 #
 ########################################################################
 
+# Unacceptable values for ansible_product_serial
 bad_serials:
   - ''
   - 0
@@ -13,4 +14,9 @@ bad_serials:
 ssh_pub_key_local_file: >-
   {{  lookup('ansible.builtin.pipe', 'ls -Lt1 ~/.ssh/*.pub').splitlines()
       | first }}
-ssh_pub_key: "{{ lookup( 'ansible.builtin.file', ssh_pub_key_local_file) }}"
+local_ssh_pub_key: >-
+  {{ lookup( 'ansible.builtin.file', ssh_pub_key_local_file) }}
+
+# Rely on the raw module by default
+use_raw: "{{ ansible_connection == 'ssh' }}"
+tasks_file_suffix: "{{ use_raw | ternary('_raw', '') }}"

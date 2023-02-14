@@ -1,0 +1,18 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define a tasks file suffix indicating whether or not to rely on the
+# raw module
+#
+########################################################################
+
+- name: Test the host connection
+  ansible.builtin.ping:
+  register: ping_reg
+  failed_when: false
+  when: ansible_python_interpreter is defined
+
+- name: Don't rely on raw module from here on
+  ansible.builtin.set_fact:
+    use_raw: false
+  when: ping_reg['ping'] | default == 'pong'

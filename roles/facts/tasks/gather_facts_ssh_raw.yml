@@ -5,26 +5,54 @@
 #
 ########################################################################
 
-- name: Run uname to get system attributes
-  ansible.builtin.raw: "uname -{{ uname_opt_item }}"
-  register: uname_reg
+# Occasional issue capturing stdout from a FreeBSD VM, so use retries.
+- name: Run uname to get system type (raw)
+  ansible.builtin.raw: uname -s
+  register: uname_s_reg
   changed_when: false
-  loop:
-    - s
-    - r
-    - m
-  loop_control:
-    loop_var: uname_opt_item
+  until:
+    - uname_s_reg['stdout_lines'][0] | default('') != ''
+    - uname_s_reg['rc'] == 0
+  retries: 3
+
+- name: Run uname to get system release (raw)
+  ansible.builtin.raw: uname -r
+  register: uname_r_reg
+  changed_when: false
+  until:
+    - uname_r_reg['stdout_lines'][0] | default('') != ''
+    - uname_r_reg['rc'] == 0
+  retries: 3
 
 # Use sys variables here instead of manually setting ansible_system, etc
 # as we don't want to manually set gathered facts because set_fact will
 # take precedence over facts gathered later using the setup module.
-- name: Define the system attributes based on uname output
+- name: Define the system attributes based on uname output (raw)
   ansible.builtin.set_fact:
-    sys: "{{ uname_reg['results'][0]['stdout_lines'][0] }}"
-    sys_release: "{{ uname_reg['results'][1]['stdout_lines'][0] }}"
-    sys_arch: "{{ uname_reg['results'][2]['stdout_lines'][0] }}"
+    sys: "{{ uname_s_reg['stdout_lines'][0] }}"
+    sys_release: "{{ uname_r_reg['stdout_lines'][0] }}"
 
 - name: Run tasks to define the Linux distribution
-  ansible.builtin.include_tasks: def_sw_sys_ssh_raw_linux.yml
-  when: sys == 'linux'
+  ansible.builtin.include_tasks: gather_facts_ssh_raw_linux.yml
+  when: sys | lower == 'linux'
+
+- name: Try to use the which command (raw)
+  ansible.builtin.raw: >-
+     unset which; unalias which 2>/dev/null || true; which which
+  register: which_reg
+  changed_when: false
+  failed_when: false
+
+- name: Try to use the command shell built-in (raw)
+  ansible.builtin.raw: >-
+    unset command; unalias command 2>/dev/null || true; command -v command
+  register: command_reg
+  changed_when: false
+  when: which_reg['rc'] != 0
+
+- name: Define which command (raw)
+  ansible.builtin.set_fact:
+    which_command: "{{  ( command_reg['rc'] | default(1) == 0 )
+                        | ternary('command -v', which_var) }}"
+  vars:
+    which_var: "{{ which_reg['stdout_lines'][0] }}"

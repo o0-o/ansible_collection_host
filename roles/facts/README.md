@@ -8,7 +8,7 @@ When a Python interpreter is available, the `setup` module is run along with `se
 
 On RouterOS hosts, the `routing`, `interfaces`, `hardware` and `default` subsets are gathered using the `community.routeros.facts` module.
 
-An `update facts` handler is also provided which simply runs `tasks/main.yml`.
+An `update facts` handler is also provided which simply runs `tasks/main.yml`. As a result, this role cannot include or import other roles.
 
 ## Requirements
 
@@ -30,6 +30,10 @@ The default ssh public key local file the most recently modified result of `~/.s
 
 By default, the ssh public key is set to the contents of `ssh_pub_key_local_file`. Overriding `ssh_pub_key` will circumvent the use of `ssh_pub_key_local_file`.
 
+#### `root_grp`
+
+See `root_grps` (plural) below for details. This is intended as a catchall and it is set to `wheel`.
+
 ### Vars
 
 #### `root_grps`
@@ -39,13 +43,12 @@ The root groups variable is a dictionary of root group names on different system
 ## Dependencies
 
 - `o0_o.host.connection`
-- `o0_o.host.privilege_escalation`*
-- `o0_o.host.python_interpreter`*
-- `community.routeros.facts`**
-- `community.routeros.command`**
+- `o0_o.host.privilege_escalation`
+- `o0_o.host.python_interpreter`
+- `community.routeros.facts`*
+- `community.routeros.command`*
 
-\* The role will run with limited functionality without these.
-\** These are required for RouterOS hosts.
+\* These are required for RouterOS hosts.
 
 ## Example playbooks
 

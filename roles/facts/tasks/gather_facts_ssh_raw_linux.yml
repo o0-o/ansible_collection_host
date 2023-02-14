@@ -5,13 +5,16 @@
 #
 ########################################################################
 
-- name: Get the contents of /etc/os-release to determine the OS of the host
+- name: >-
+    Get the contents of /etc/os-release to determine the OS of the host (raw)
   ansible.builtin.raw: cat /etc/os-release
   register: os_release_reg
   changed_when: false
 
-- name: Define os-release values as a dictionary
+# Converts the contents of /etc/os-release into a dictionary
+- name: Define os-release values as a dictionary (raw)
   ansible.builtin.set_fact:
     linux_os_release: "{{ dict( os_release_reg['stdout_lines']
                                 | select('match', '^\\w+=.*$')
                                 | map('regex_replace', '\"', '')
+                                | map('split', '=') ) }}"

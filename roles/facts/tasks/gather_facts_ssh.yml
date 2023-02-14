@@ -5,56 +5,52 @@
 #
 ########################################################################
 
-- name: Attempt to gather facts normally
+- name: Define the public SSH key
+  ansible.builtin.set_fact:
+    ssh_pub_key: "{{  ( ansible_ssh_private_key_file is defined )
+                      | ternary(ansible_pub_key_var, local_ssh_pub_key) }}"
+  vars:
+    ansible_pub_key_var: >-
+      {{  lookup( 'ansible.builtin.pipe',
+                  'ssh-keygen -y -f ' + ansible_ssh_private_key_file ) }}
+
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Gather service facts
+  ansible.builtin.service_facts:
+  become: true
+
+- name: Run tasks to gather additional platform-specific facts
+  ansible.builtin.include_tasks:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'tasks',
+                      prefix='gather_facts_ssh_',
+                      skip=true ) }}"
+
+# Ansible does not gather serial numbers on Raspberry Pis, and
+# possibly other similar ARM boards.
+- name: If no serial number is gathered, check for one
+  when: ansible_product_serial | default('')  == ''
   block:
 
-    - name: Gather facts
-      ansible.builtin.setup:
+    - name: Look for a serial number in /sys/firmware/devicetree/base
+      ansible.builtin.slurp:
+        src: /sys/firmware/devicetree/base/serial-number
+      register: serial_reg
 
-    - name: Gather service facts
-      ansible.builtin.service_facts:
-      become: true
+    - name: Define the serial number
+      ansible.builtin.set_fact:
+        ansible_product_serial: "{{ serial_reg['content'] | b64decode }}"
 
-    - name: Run tasks to gather additional platform-specific facts
-      ansible.builtin.include_tasks:
-        file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
-                          'tasks',
-                          prefix='gather_facts_ssh_',
-                          skip=true ) }}"
-
-    # Ansible does not gather serial numbers on Raspberry Pis, and
-    # possibly other similar ARM boards.
-    - name: If no serial number is gathered, check for one
-      when: ansible_product_serial | default('')  == ''
-      block:
-
-        - name: Look for a serial number in /sys/firmware/devicetree/base
-          ansible.builtin.slurp:
-            src: /sys/firmware/devicetree/base/serial-number
-          register: serial_reg
-
-        - name: Define the serial number
-          ansible.builtin.set_fact:
-            ansible_product_serial: "{{ serial_reg['content'] | b64decode }}"
-
-        # See defaults/main.yml for bad serials list
-        - name: Serial looks unique
-          ansible.builtin.assert:
-            that: ansible_product_serial not in bad_serials
-
-      rescue:
-
-        - name: "WARNING: serial number is not found or not unique"
-          ansible.builtin.debug:
-            msg: >-
-              ansible_product_serial={{ ansible_product_serial | default('') }}
+    # See defaults/main.yml for bad serials list
+    - name: Serial looks unique
+      ansible.builtin.assert:
+        that: ansible_product_serial not in bad_serials
 
   rescue:
 
-    - name: Run tasks to set preliminary facts using raw commands
-      ansible.builtin.include_tasks: gather_facts_ssh_raw.yml
-
-# See vars/main.yml for root_grps dictionary
-- name: Define the root group based on the system
-  ansible.builtin.set_fact:
-    root_grp: "{{ root_grps[ ansible_system | default(sys) | lower ] }}"
+    - name: "WARNING: serial number is not found or not unique"
+      ansible.builtin.debug:
+        msg: >-
+          ansible_product_serial={{ ansible_product_serial | default('') }}

@@ -5,10 +5,32 @@
 #
 ########################################################################
 
+- name: Run tasks to determine if the raw module should be used
+  ansible.builtin.include_tasks: def_raw.yml
+
 - name: Run tasks to gather facts based on connection type or network OS
-  ansible.builtin.include_tasks: >-
-    gather_facts_{{ ansible_network_os
-                    | default(ansible_connection)
-                    | lower
-                    | split('.')
-                    | last }}.yml
+  ansible.builtin.include_tasks:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'tasks',
+                      prefix='gather_facts_',
+                      suffix=tasks_file_suffix ) }}"
+
+- name: Define the OS name
+  ansible.builtin.set_fact:
+    os_name: "{{  ansible_distribution
+                  | default( linux_os_release['ID'] )
+                  | default(sys)
+                  | default(ansible_network_os)
+                  | split('.')
+                  | last
+                  | lower
+                  | regex_replace('^arch$', 'archlinux')
+                  | regex_replace('macosx', 'darwin') }}"
+
+# See vars/main.yml for root_grps dictionary
+- name: Define the root group based on the system
+  ansible.builtin.set_fact:
+    root_grp: "{{ root_grp_var }}"
+  vars:
+    root_grp_var: "{{ root_grps[ ansible_system | default(sys) | lower ] }}"
+  when: root_grp_var is defined
