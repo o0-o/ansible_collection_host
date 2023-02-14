@@ -51,6 +51,7 @@ Versions 2.11+
 - `software`
 - `python_interpreter`
 - `facts`
+- `mandatory_access_control`
 
 ## Using this collection
 
@@ -62,13 +63,13 @@ Versions 2.11+
   gather_facts: false
   any_errors_fatal: true
   roles:
-    - o0_o.host.connection
+    - o0_o.host.python_interpreter
 ```
 
 ### Installing the collection from Ansible Galaxy
 
 ```shell
-pip install ansible-pylibssh
+pip install ansible-pylibssh #o0_o.inventory will do this for you
 ansible-galaxy role install o0_o.inventory
 ansible-galaxy collection install o0_o.host
 ```
@@ -107,6 +108,7 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 - `software` role added.
 - `facts` role added.
 - `python_interpreter` role added.
+- `mandatory_access_control` role added.
 
 ## Roadmap
 
@@ -119,9 +121,11 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 - ~~Connection~~
 - ~~Privilege escalation~~
 - ~~Time~~
+- ~~Software Management~~
 - ~~Python interpreter~~
 - ~~Facts~~
-- Mandatory access control (MAC)
+- ~~Mandatory access control (MAC)~~
+- Schedule
 - Ansible user
 - Time zone
 - System-specific sane defaults and hardening
@@ -135,13 +139,12 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
   - OpenBSD
   - macOS
   - RouterOS
-- ~~Software~~
 - Antivirus
 - Auditing
 - Intrusion detection
 
 ### Playbooks
-- Host configuration baseline
+- Host configuration milestones
 
 ## More information
 
