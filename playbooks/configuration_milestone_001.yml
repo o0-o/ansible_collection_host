@@ -1,0 +1,71 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configuration milestone 1
+#
+# This playbook will configure the following:
+#
+#   Inventory boilerplate on localhost (o0_o.inventory)
+#
+#   Connection to the remote host (o0_o.host.connection)
+#
+#   Sudo or doas for the Ansible user (o0_o.host.privilege_escalation)
+#
+#   Time zone and current time (o0_o.host.time)
+#
+#   Package managers and repositories (o0_o.host.software_management)
+#
+#   Identify and/or install Python (o0_o.host.python_interpreter)
+#
+#   Gather facts (o0_o.host.facts)
+#
+#   AppArmor or SELinux (o0_o.host.mandatory_access_control)
+#
+# Requirements
+#
+#   An inventory of at least one host (not localhost).
+#
+#     The host must resolve or the hostname must correlate to a VM
+#     defined in a Vagrantfile within the current directory.
+#
+#   The remote host's operating systems is either:
+#
+#     Arch Linux
+#     CentOS 7
+#     Rocky Linux 8
+#     One of the most recent 2 releases of Fedora
+#     Debian 11
+#     Ubuntu 22.04
+#     FreeBSD 13
+#     Openbsd 7.1+
+#     One of the most recent 2 release of macOS
+#     RouterOS 7 stable
+#
+#   An SSH key is deployed to that host that is locally available.
+#
+#   The remote user is either:
+#
+#     root
+#     pi
+#     vagrant
+#     admin
+#     ubnt
+#     Defined as ansible_user in the inventory
+#     Defined as remote_user in Ansible configuration
+#     Defined in a list called defaults_adms
+#
+########################################################################
+
+- name: Apply a baseline configuration to all hosts
+  hosts: all
+  gather_facts: false
+  any_errors_fatal: true
+  # The privilege_escalation, software_management and
+  # mandatory_access_control roles are interdependent and running any
+  # one of them will result in the same final state on the host.
+  # Dependencies are handled within the roles so it is only necessary to
+  # run any one of them.
+  roles:
+    - o0_o.host.privilege_escalation
+    #- o0_o.host.software_management
+    #- o0_o.host.mandatory_access_control
