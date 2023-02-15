@@ -120,11 +120,16 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 ### Roles
 - ~~Connection~~
 - ~~Privilege escalation~~
+  - Add privileged user to ancillary admin groups
+  - Consider automatic new Ansible user feature here instead of its own role
 - ~~Time~~
 - ~~Software Management~~
+  - Handle `/etc/sources.list.d` instead of only `/etc/sources.list` on Debian distributions, specifically for Raspbian
 - ~~Python interpreter~~
 - ~~Facts~~
+  - Identify Raspbian vs plain Debian
 - ~~Mandatory access control (MAC)~~
+  - Implement bootloader dependency
 - Bootloader
 - Schedule
 - Ansible user
