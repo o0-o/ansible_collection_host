@@ -1,0 +1,62 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure the time zone on a RouterOS host
+#
+########################################################################
+
+- name: Configure timezone autodetect
+  block:
+
+    - name: Timezone autodetect is disabled (RouterOS)
+      community.routeros.command:
+        commands:
+          - put [/system clock get time-zone-autodetect]
+      changed_when: false
+      failed_when: ros_tz_auto_reg['stdout_lines'][0][0] != 'false'
+      register: ros_tz_auto_reg
+
+  rescue:
+
+    - name: Disable timezone auto-detect (RouterOS)
+      community.routeros.command:
+        commands:
+          - /system clock set time-zone-autodetect=no
+      when: not ansible_check_mode
+
+    - name: Confirm timezone autodetect was disabled (RouterOS)
+      community.routeros.command:
+        commands: put [/system clock get time-zone-autodetect]
+      register: ros_confirm_tz_auto_reg
+      changed_when: ansible_check_mode
+      failed_when:
+        - ros_confirm_tz_auto_reg['stdout_lines'][0][0] != 'false'
+        - not ansible_check_mode
+
+- name: Set the timezone to GMT
+  block:
+
+    - name: The timezone is set to GMT (RouterOS)
+      community.routeros.command:
+        commands:
+          - put [/system clock get time-zone-name]
+      changed_when: false
+      failed_when: ros_tz_reg['stdout_lines'][0][0] != 'GMT'
+      register: ros_tz_reg
+
+  rescue:
+
+    - name: Set the timezone to GMT (RouterOS)
+      community.routeros.command:
+        commands:
+          - /system clock set time-zone-name=GMT
+      when: not ansible_check_mode
+
+    - name: Confirm the timezone was changed (RouterOS)
+      community.routeros.command:
+        commands: put [/system clock get time-zone-name]
+      register: ros_confirm_tz_reg
+      changed_when: ansible_check_mode
+      failed_when:
+        - ros_confirm_tz_reg['stdout_lines'][0][0] != tz
+        - not ansible_check_mode

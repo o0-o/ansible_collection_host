@@ -1,15 +1,9 @@
 ---
 # vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
 #
-# Sync time with localhost on a RouterOS host
+# Define the time on a RouterOS host
 #
 ########################################################################
-
-# Only GMT is supported on RouterOS. This must be configured before
-# getting the time.
-- name: Run the o0_o.host.time_zone role (RouterOS)
-  ansible.builtin.include_role:
-    name: o0_o.host.time_zone
 
 - name: Get time from the host (RouterOS)
   community.routeros.command:
