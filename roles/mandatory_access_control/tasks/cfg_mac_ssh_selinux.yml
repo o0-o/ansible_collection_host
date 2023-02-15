@@ -11,10 +11,13 @@
     state: permissive
   become: true
 
-- name: >-
-    Add privilege escalation roles to post-run list on initial SELinux
-    configuration
-  ansible.builtin.set_fact:
-    mac_post_roles:
-      - o0_o.host.privilege_escalation
-  when: pre_vars['mac'] | default != 'selinux'
+- name: Run the privilege escalation role to finish configuring SELinux
+  ansible.builtin.include_role:
+    name: "{{ priv_role_var }}"
+    allow_duplicates: true
+    public: true
+  vars:
+    priv_role_var: o0_o.host.privilege_escalation
+  when:
+    - priv_role_var not in ansible_parent_role_names | default([])
+    - pre_vars['mac'] | default != 'selinux'
