@@ -52,12 +52,14 @@
 
   rescue:
 
-    - debug:
+    - name: TODO
+      ansible.builtin.debug:
         msg: >-
           TODO Configure bootloader on Arch Linux and Raspberry Pi for
           AppArmor.
 
-    - set_fact:
+    - name: No MAC
+      ansible.builtin.set_fact:
         mac:
       changed_when: true
       notify: update host inventory variables

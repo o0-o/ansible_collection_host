@@ -9,4 +9,4 @@
   ansible.builtin.include_role:
     name: "{{ cfg_mac_ssh_dep_item }}"
     public: true
-  when: use_sw_mgmt | default(false) == false
+  when: not use_sw_mgmt | default(false)

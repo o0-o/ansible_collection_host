@@ -13,7 +13,7 @@
   ansible.builtin.meta: reset_connection
 
 - name: Test the connection [YUBIKEY PRESS]
-  ping:
+  ansible.builtin.ping:
   become: true
 
 - name: Reset sshd_config

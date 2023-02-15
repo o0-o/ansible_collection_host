@@ -6,19 +6,12 @@
 # This playbook will configure the following:
 #
 #   Inventory boilerplate on localhost (o0_o.inventory)
-#
 #   Connection to the remote host (o0_o.host.connection)
-#
 #   Sudo or doas for the Ansible user (o0_o.host.privilege_escalation)
-#
 #   Time zone and current time (o0_o.host.time)
-#
 #   Package managers and repositories (o0_o.host.software_management)
-#
 #   Identify and/or install Python (o0_o.host.python_interpreter)
-#
 #   Gather facts (o0_o.host.facts)
-#
 #   AppArmor or SELinux (o0_o.host.mandatory_access_control)
 #
 # Requirements
@@ -56,7 +49,7 @@
 #
 ########################################################################
 
-- name: Apply a baseline configuration to all hosts
+- name: 'Configuration milestone 001'
   hosts: all
   gather_facts: false
   any_errors_fatal: true

@@ -30,19 +30,19 @@
       when: cfg_file_reg['rc'] == 0
       block:
 
-          - name: Back up the configuration file (raw)
-            ansible.builtin.raw: >-
-              {{ ansible_become_method | default }}
-              cp -a "{{ cfg_file_var | quote }}"
-              {{ cfg_file_var | quote }}".$(date +%Y%m%d%H%M%S)~"
-            when: not ansible_check_mode
+        - name: Back up the configuration file (raw)
+          ansible.builtin.raw: >-
+            {{ ansible_become_method | default }}
+            cp -a "{{ cfg_file_var | quote }}"
+            {{ cfg_file_var | quote }}".$(date +%Y%m%d%H%M%S)~"
+          when: not ansible_check_mode
 
-          - name: >-
-              The previous task would have resulted in a change (check mode)
-            ansible.builtin.debug:
-              msg: "{{ cfg_file_var }} would have been backed up."
-            changed_when: true
-            when: ansible_check_mode
+        - name: >-
+            The previous task would have resulted in a change (check mode)
+          ansible.builtin.debug:
+            msg: "{{ cfg_file_var }} would have been backed up."
+          changed_when: true
+          when: ansible_check_mode
 
     - name: Write the template to the configuration file (raw)
       ansible.builtin.raw: >-

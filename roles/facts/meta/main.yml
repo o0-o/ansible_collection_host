@@ -16,10 +16,9 @@ galaxy_info:
   # - GPL-3.0-only
   # - Apache-2.0
   # - CC-BY-4.0
-  license:
-    - MIT
+  license: MIT
 
-  min_ansible_version: 2.11
+  min_ansible_version: '2.11'
 
   # If this a Container Enabled role, provide the minimum Ansible
   # Container version.
@@ -48,16 +47,18 @@ galaxy_info:
         - all
     - name: Debian
       versions:
-        - all
+        - bullseye
     - name: EL
       versions:
-        - all
+        - '7'
+        - '8'
     - name: Fedora
       versions:
         - all
     - name: FreeBSD
-      versions:
-        - all
+    # Ansible platforms has not been updated to include version 13 yet
+    #  versions:
+    #    - '13.1'
     - name: macOS
       versions:
         - all
@@ -66,7 +67,7 @@ galaxy_info:
         - all
     - name: Ubuntu
       versions:
-        - all
+        - jammy
 
   galaxy_tags:
   # List tags for your role here, one per line. A tag is a keyword that
@@ -83,4 +84,4 @@ galaxy_info:
 dependencies:
 # List your role dependencies here, one per line. Be sure to remove the
 # '[]' above, if you add dependencies to this list.
-  - o0_o.host.connection
+  - { role: o0_o.host.connection }

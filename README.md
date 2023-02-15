@@ -97,19 +97,6 @@ ansible-galaxy collection install o0_o.host:==0.1.0
 
 See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guide/collections_using.html) for more details.
 
-## Release notes
-
-### `0.1.0-alpha.1`
-- Initially created the collection.
-- `first_found_by_host_attributes` lookup plugin added.
-- `connection` role added.
-- `privilege_escalation` role added.
-- `time` role added.
-- `software_management` role added.
-- `facts` role added.
-- `python_interpreter` role added.
-- `mandatory_access_control` role added.
-
 ## Roadmap
 
 ### Plugins

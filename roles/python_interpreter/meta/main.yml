@@ -18,7 +18,7 @@ galaxy_info:
   # - CC-BY-4.0
   license: MIT
 
-  min_ansible_version: 2.11
+  min_ansible_version: '2.11'
 
   # If this a Container Enabled role, provide the minimum Ansible
   # Container version.
@@ -32,7 +32,7 @@ galaxy_info:
   # To view available platforms and versions (or releases), visit:
   # https://galaxy.ansible.com/api/v1/platforms/
   #
-  # platforms:
+  platforms:
   # - name: Fedora
   #   versions:
   #   - all
@@ -43,8 +43,34 @@ galaxy_info:
   #   - 1.0
   #   - 7
   #   - 99.99
+    - name: ArchLinux
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - bullseye
+    - name: EL
+      versions:
+        - '7'
+        - '8'
+    - name: Fedora
+      versions:
+        - all
+    - name: FreeBSD
+    # Ansible platforms has not been updated to include version 13 yet
+    #  versions:
+    #    - '13.1'
+    - name: macOS
+      versions:
+        - all
+    - name: OpenBSD
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - jammy
 
-  galaxy_tags: []
+  galaxy_tags:
     # List tags for your role here, one per line. A tag is a keyword
     # that describes and categorizes the role. Users find roles by
     # searching for tags. Be sure to remove the '[]' above, if you add
@@ -53,8 +79,15 @@ galaxy_info:
     # NOTE: A tag is limited to a single word comprised of alphanumeric
     # characters.
     #       Maximum 20 tags per role.
+    - system
+    - automation
+    - python
+    - linux
+    - freebsd
+    - openbsd
+    - macos
 
 dependencies:
   # List your role dependencies here, one per line. Be sure to remove
   # the '[]' above, if you add dependencies to this list.
-  - o0_o.host.connection
+  - { role: o0_o.host.connection }
