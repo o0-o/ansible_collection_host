@@ -6,4 +6,22 @@
 ########################################################################
 
 - name: restore selinux contexts
-  ansible.builtin.include_tasks: restore_selinux_contexts.yml
+  ansible.builtin.command:
+    argv:
+      - /usr/sbin/restorecon
+      - -Frv
+      - /dev
+      - /etc
+      - /home
+      - /usr
+      - /var/lib
+      - /var/db
+      - /var/local
+      - /var/log
+  become: true
+  register: apply_contexts_to_system_reg
+  changed_when: >-
+    apply_contexts_to_system_reg['stdout_lines'][0] | default('') != ''
+  when:
+    - not ansible_check_mode
+    - mac == 'selinux'
