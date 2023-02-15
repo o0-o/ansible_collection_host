@@ -26,6 +26,7 @@ sudo_passwordless_adm: 'ALL=(ALL) NOPASSWD: ALL'
 # Dependencies
 cfg_priv_ssh_deps:
   - role: o0_o.host.facts
+    dupes: "{{ use_raw | default(true) }}"
 cfg_priv_ssh_cmd_deps:
   - role: o0_o.host.software_management
   - role: o0_o.host.python_interpreter
