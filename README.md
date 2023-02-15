@@ -105,7 +105,7 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 - `connection` role added.
 - `privilege_escalation` role added.
 - `time` role added.
-- `software` role added.
+- `software_management` role added.
 - `facts` role added.
 - `python_interpreter` role added.
 - `mandatory_access_control` role added.
@@ -127,7 +127,6 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 - ~~Mandatory access control (MAC)~~
 - Schedule
 - Ansible user
-- Time zone
 - System-specific sane defaults and hardening
   - Arch Linux
   - Centos/RHEL 7
