@@ -6,7 +6,8 @@
 ########################################################################
 
 # Use localhost's time zone by default.
-tz: "{{ ansible.builtin.pipe('date +%Z') | regex_replace('UTC', 'GMT') }}"
+tz: "{{ lookup('ansible.builtin.pipe', 'date +%Z')
+        | regex_replace('UTC', 'GMT') }}"
 
 time_sync_tolerance: 5 #minutes
 
