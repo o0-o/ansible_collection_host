@@ -16,10 +16,10 @@
     - "ansible_os_family | default | lower == 'redhat'
       or 'rhel' in linux_os_release['ID_LIKE'] | default | lower | split(' ')"
     - >-
-      ansible_distribution_major_version
-      | default( linux_os_release['VERSION_ID'] )
-      | string
-      == '7'
+        ansible_distribution_major_version
+        | default( linux_os_release['VERSION_ID'] )
+        | string
+        == '7'
   block:
 
     - name: Define the Python package (RHEL 7 or equivalent)
