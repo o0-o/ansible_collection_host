@@ -5,11 +5,12 @@
 #
 ########################################################################
 
-- name: Run role dependencies for Python interpreter installation
+- name: Run role dependency for Python interpreter installation
   ansible.builtin.include_role:
-    name: "{{ install_python_ssh_raw_dep_item }}"
+    name: "{{ install_python_ssh_raw_dep_item['role'] }}"
     public: true
-  when: >-
-    install_python_ssh_raw_dep_item not in ansible_role_names
-    or  ( install_python_ssh_raw_dep_item == 'o0_o.host.software_management'
-          and use_sw_mgmt | default(false) == false )
+  when:
+    - >-
+        install_python_ssh_raw_dep_item['role'] not in ansible_role_names
+        or install_python_ssh_raw_dep_item['dupes'] | default(false)
+    - install_python_ssh_raw_dep_item['condition'] | default(true)

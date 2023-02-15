@@ -7,7 +7,9 @@
 
 # Dependencies
 def_python_ssh_raw_deps:
-  - o0_o.host.facts
+  - role: o0_o.host.facts
 install_python_ssh_raw_deps:
-  - o0_o.host.privilege_escalation
-  - o0_o.host.software_management
+  - role: o0_o.host.privilege_escalation
+  - role: o0_o.host.software_management
+    dupes: true
+    condition: not use_sw_mgmt | default(false)

@@ -5,8 +5,12 @@
 #
 ########################################################################
 
-- name: Run role dependencies for Python interpreter definition
+- name: Run role dependency for Python interpreter definition
   ansible.builtin.include_role:
-    name: "{{ def_python_ssh_raw_dep_item }}"
+    name: "{{ def_python_ssh_raw_dep_item['role'] }}"
     public: true
-  when: def_python_ssh_raw_dep_item not in ansible_role_names
+  when:
+    - >-
+        def_python_ssh_raw_dep_item['role'] not in ansible_role_names
+        or def_python_ssh_raw_dep_item['dupes'] | default(false)
+    - def_python_ssh_raw_dep_item['condition'] | default(true)
