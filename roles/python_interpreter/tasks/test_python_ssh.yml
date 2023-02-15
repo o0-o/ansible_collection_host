@@ -10,6 +10,7 @@
 
     - name: The current Python interpreter is valid
       ansible.builtin.ping:
+      retries: 2
 
     - name: Scope ansible_python_interpreter for general use
       ansible.builtin.set_fact:
