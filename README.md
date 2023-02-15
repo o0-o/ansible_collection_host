@@ -125,6 +125,7 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 - ~~Python interpreter~~
 - ~~Facts~~
 - ~~Mandatory access control (MAC)~~
+- Bootloader
 - Schedule
 - Ansible user
 - System-specific sane defaults and hardening
