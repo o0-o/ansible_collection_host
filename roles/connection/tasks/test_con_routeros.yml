@@ -26,3 +26,16 @@
   when:
     test_con_reg['unreachable'] | default(false)
     or test_con_reg['failed'] | default(true)
+
+# Avoid running this in test_con.yml to save time and because the
+# approach of use vars[var_item] will not work if the value is jinja,
+# as in the case of the default value of net_ssh_method.
+- name: Scope functional network connection variables for general use
+  ansible.builtin.set_fact:
+    ansible_network_os: "{{ ansible_network_os }}"
+    ansible_network_cli_ssh_type: "{{ ansible_network_cli_ssh_type }}"
+  changed_when:
+    pre_vars['ansible_network_os'] | default != ansible_network_os
+    or  pre_vars['ansible_network_cli_ssh_type'] | default
+        != ansible_network_cli_ssh_type
+  notify: update host inventory variables
