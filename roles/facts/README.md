@@ -45,8 +45,7 @@ The root groups variable is a dictionary of root group names on different system
 - `o0_o.host.connection`
 - `o0_o.host.privilege_escalation`
 - `o0_o.host.python_interpreter`
-- `community.routeros.facts`*
-- `community.routeros.command`*
+- `community.routeros`*
 
 \* These are required for RouterOS hosts.
 

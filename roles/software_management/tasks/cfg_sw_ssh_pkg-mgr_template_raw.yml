@@ -13,7 +13,7 @@
 
 - name: Get the contents of the configuration file (raw)
   ansible.builtin.raw: >-
-    {{ ansible_become_method | default }}
+    {{ ansible_become_method }}
     cat {{ cfg_file_var | quote }}
   register: cfg_file_reg
   changed_when: false
@@ -32,13 +32,12 @@
 
         - name: Back up the configuration file (raw)
           ansible.builtin.raw: >-
-            {{ ansible_become_method | default }}
+            {{ ansible_become_method }}
             cp -a "{{ cfg_file_var | quote }}"
             {{ cfg_file_var | quote }}".$(date +%Y%m%d%H%M%S)~"
           when: not ansible_check_mode
 
-        - name: >-
-            The previous task would have resulted in a change (check mode)
+        - name: The previous task would have resulted in a change (check mode)
           ansible.builtin.debug:
             msg: "{{ cfg_file_var }} would have been backed up."
           changed_when: true
@@ -46,7 +45,7 @@
 
     - name: Write the template to the configuration file (raw)
       ansible.builtin.raw: >-
-        {{ ansible_become_method | default }} sh -c {{ cmd_var | quote }}
+        {{ ansible_become_method }} sh -c {{ cmd_var | quote }}
       vars:
         cmd_var: >-
           printf '%s' {{ cfg_template_var | quote }} >

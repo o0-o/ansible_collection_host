@@ -10,7 +10,6 @@
     name: "{{ time_dep_item['role'] }}"
     public: true
   when:
-    - >-
-        time_dep_item['role'] not in ansible_role_names
-        or time_dep_item['dupes'] | default(false)
+    - time_dep_item['role'] not in ansible_role_names
+      or time_dep_item['dupes'] | default(false)
     - time_dep_item['condition'] | default(true)

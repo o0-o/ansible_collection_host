@@ -10,7 +10,6 @@
     name: "{{ priv_ssh_dep_item['role'] }}"
     public: true
   when:
-    - >-
-        priv_ssh_dep_item['role'] not in ansible_role_names
-        or priv_ssh_dep_item['dupes'] | default(false)
+    - priv_ssh_dep_item['role'] not in ansible_role_names
+      or priv_ssh_dep_item['dupes'] | default(false)
     - priv_ssh_dep_item['condition'] | default(true)

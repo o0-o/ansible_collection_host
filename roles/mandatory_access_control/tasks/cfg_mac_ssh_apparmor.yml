@@ -20,7 +20,7 @@
       become: true
       register: apparmor_status_reg
       changed_when: false
-      failed_when: >-
+      failed_when:
         apparmor_status_reg['stdout_lines'][0] != 'apparmor module is loaded.'
         or apparmor_status_reg['stdout_lines'][1]
         | regex_search('^\d+ profiles are loaded\.$')
@@ -30,7 +30,7 @@
         == ''
         or apparmor_status_reg['rc'] != 0
 
-    # command module kills glob so we use shell in this case
+    # command module doesn't glob so we use shell in this case
     - name: Set AppArmor to enforcing
       ansible.builtin.shell: aa-enforce /etc/apparmor.d/*
       become: true
@@ -54,8 +54,7 @@
 
     - name: TODO
       ansible.builtin.debug:
-        msg: >-
-          TODO Configure bootloader on Arch Linux and Raspberry Pi for
+        msg: TODO Configure bootloader on Arch Linux and Raspberry Pi for
           AppArmor.
 
     - name: No MAC

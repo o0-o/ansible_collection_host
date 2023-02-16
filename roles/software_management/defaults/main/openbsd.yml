@@ -6,7 +6,7 @@
 ########################################################################
 
 openbsd_install_url: https://cdn.openbsd.org/pub/OpenBSD
-openbsd_fw_url: >-
+openbsd_fw_url:
   http://firmware.openbsd.org/firmware/{{ ansible_distribution_version
                                           | default(sys_release) }}
 

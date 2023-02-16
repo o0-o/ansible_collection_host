@@ -4,29 +4,23 @@ __metaclass__ = type
 DOCUMENTATION = """
     name: first_found_by_host_attributes
     author: o0-o
-    short_description: >-
-      return first found path to vars, tasks or template file based on
-      attributes of the host
+    short_description: return first found path to vars, tasks or template file
+      based on attributes of the host
     description:
       - This lookup is an extension of the builtin C(first_found) plugin.
-      - >-
-        This lookup checks a list of files and paths based on the host
+      - This lookup checks a list of files and paths based on the host
         operating system and other characteristics, and returns the full path
         to the first match in the current search path(s).
-      - >-
-        The lookup checks for matches from most to least specific, beginning
+      - The lookup checks for matches from most to least specific, beginning
         with the distribution name, full version and network management
         service.
-      - >-
-        A type of C(vars), C(tasks) or C(template) is required for this plugin
+      - A type of C(vars), C(tasks) or C(template) is required for this plugin
         to operate.
-      - >-
-        In addition to gathered Ansible facts and Ansible special variables,
+      - In addition to gathered Ansible facts and Ansible special variables,
         a C(net_mgr) fact may be set to indicate the network management system
         in use on the host (typically to differentiate between NetworkManager,
         systemd-networkd, etc. on Linux).
-      - >-
-        In addition to gathered Ansible facts and Ansible special variables,
+      - In addition to gathered Ansible facts and Ansible special variables,
         a C(mac) fact may be set to indicate which mandatory access control
         system is in use (typically to differentiate between SELinux and
         AppArmor).
@@ -68,8 +62,7 @@ DOCUMENTATION = """
       - Lookups that call for facts that are undefined are omitted.
       - When using the C(o0_o.host.mac) role, the possible values of C(mac)
         are C(selinux) or C(apparmor).
-      - >-
-        When using the C(o0_o.network) collection, the possible values of
+      - When using the C(o0_o.network) collection, the possible values of
         C(net_mgr) are C(nm) for NetworkManager and C(netd) for
         systemd-networkd.
     options:
@@ -77,18 +70,16 @@ DOCUMENTATION = """
         description: C(vars), C(tasks) or C(template)
         required: True
       files:
-        description: >-
-          This is an option for the C(first_found) plugin which this plugin
-          extends. For this plugin to work, it needs to be included here, but
-          the option has no effect.
+        description: This is an option for the C(first_found) plugin which this
+          plugin extends. For this plugin to work, it needs to be included
+          here, but the option has no effect.
         type: list
         elements: string
         required: False
       paths:
-        description: >-
-          This is an option for the C(first_found) plugin which this plugin
-          extends. For this plugin to work, it needs to be included here, but
-          the option has no effect.
+        description: This is an option for the C(first_found) plugin which this
+          plugin extends. For this plugin to work, it needs to be included
+          here, but the option has no effect.
         type: list
         elements: string
         required: False
@@ -122,8 +113,7 @@ DOCUMENTATION = """
         type: string
         description:
           - This is the extension to use when searching for files.
-          - >-
-            The default value is 'j2' for templates and 'yml' for vars and
+          - The default value is 'j2' for templates and 'yml' for vars and
             tasks.
         required: False
       skip:
@@ -131,13 +121,11 @@ DOCUMENTATION = """
         default: False
         description:
           - When C(true), return C(/dev/null/) when no files are matched.
-          - >-
-            This is useful when used with C(include_vars) or C(include_tasks)
+          - This is useful when used with C(include_vars) or C(include_tasks)
             modules, as C(/dev/null) results in no action or error. It is
             not recommended to use C(skip=true) with the C(src) parameter of
             the C(template) module.
-          - >-
-            When C(false) and C(lookup) or C(query) specifies
+          - When C(false) and C(lookup) or C(query) specifies
             I(errors='ignore'), all errors (including no file found, but
             potentially others) return C('')
         required: False
@@ -155,9 +143,8 @@ EXAMPLES = """
 # /dev/null is returned on if skip=true and no matches are found. This
 # allows `include_tasks` to run successfully without actually doing
 # anything if desired.
-- name: >-
-    Define variables based on the host platform and do nothing if no matches
-    are found
+- name: Define variables based on the host platform and do nothing if no
+    matches are found
   ansible.builtin.include_tasks: >-
     {{ lookup(  'o0_o.utils.first_found_by_platform',
                 'tasks',

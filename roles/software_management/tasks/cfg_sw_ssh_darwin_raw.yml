@@ -7,7 +7,7 @@
 
 - name: Install Xcode command line tools if they aren't already
   vars:
-    cli_tools_tmp_file_var: >-
+    cli_tools_tmp_file_var:
       /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
     cli_tools_pkg_var: >-
       {{  sw_updates_reg['stdout_lines']
@@ -34,20 +34,19 @@
       changed_when: true
       when: ansible_check_mode
 
-    - name: >-
-        List software updates to confirm command line tools package is
+    - name: List software updates to confirm command line tools package is
         available (macOS)
       ansible.builtin.raw: softwareupdate --list
       register: sw_updates_reg
       changed_when: false
-      failed_when: >-
-        sw_updates_reg['stdout_lines']
-        | select('match', 'Label: Command Line Tools')
-        == []
+      failed_when: "\
+        sw_updates_reg['stdout_lines'] \
+        | select('match', 'Label: Command Line Tools') \
+        == []"
 
     - name: Install Xcode command line tools (macOS)
       ansible.builtin.raw: >-
-        {{ ansible_become_method | default }} softwareupdate --install
+        {{ ansible_become_method }} softwareupdate --install
         {{ cli_tools_pkg_var | quote }}
       when: not ansible_check_mode
 
@@ -59,7 +58,7 @@
 
     - name: Enable Xcode command line tools (macOS)
       ansible.builtin.raw: >-
-        {{ ansible_become_method | default }} xcode-select --switch
+        {{ ansible_become_method }} xcode-select --switch
         /Library/Developer/CommandLineTools
       when: not ansible_check_mode
 

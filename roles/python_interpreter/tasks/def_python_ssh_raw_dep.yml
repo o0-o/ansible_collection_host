@@ -10,7 +10,6 @@
     name: "{{ def_python_ssh_raw_dep_item['role'] }}"
     public: true
   when:
-    - >-
-        def_python_ssh_raw_dep_item['role'] not in ansible_role_names
-        or def_python_ssh_raw_dep_item['dupes'] | default(false)
+    - def_python_ssh_raw_dep_item['role'] not in ansible_role_names
+      or def_python_ssh_raw_dep_item['dupes'] | default(false)
     - def_python_ssh_raw_dep_item['condition'] | default(true)

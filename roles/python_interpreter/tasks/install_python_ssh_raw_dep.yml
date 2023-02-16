@@ -10,7 +10,6 @@
     name: "{{ install_python_ssh_raw_dep_item['role'] }}"
     public: true
   when:
-    - >-
-        install_python_ssh_raw_dep_item['role'] not in ansible_role_names
-        or install_python_ssh_raw_dep_item['dupes'] | default(false)
+    - install_python_ssh_raw_dep_item['role'] not in ansible_role_names
+      or install_python_ssh_raw_dep_item['dupes'] | default(false)
     - install_python_ssh_raw_dep_item['condition'] | default(true)

@@ -20,9 +20,8 @@
   ansible.builtin.set_fact:
     use_con: true
   when:
-    - >-
-        not ( ansible_host == '127.0.0.1'
-              and ansible_port | default('22') | string == '22' )
+    - not ( ansible_host == '127.0.0.1'
+            and ansible_port | default('22') | string == '22' )
     # rescue will not catch a failure from an unreachable host, so we
     # ignore unreachable during the test, and fail here instead so that
     # the rescue portion of the block will be triggered.
@@ -32,7 +31,7 @@
 - name: Scope functional connection variables for general use
   ansible.builtin.set_fact:
     "{{ var_item }}": "{{ vars[var_item] }}"
-  changed_when: >-
+  changed_when:
     pre_vars[var_item] is undefined
     or pre_vars[var_item] | default != vars[var_item]
   when:

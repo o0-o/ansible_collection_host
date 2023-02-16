@@ -62,11 +62,9 @@ This is a list of common default administrator user names. This is useful when y
 
 ## Dependencies
 
-```sh
-ansible-galaxy role install o0_o.inventory
-ansible-galaxy collection install community.routeros
-ansible-galaxy collection install community.network
-```
+- `o0_o.inventory`
+- `community.routeros`
+- `community.network`
 
 ## Example playbook
 

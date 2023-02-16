@@ -20,7 +20,7 @@
   when: not use_raw
 
 - name: Run tasks to configure the specific privilege escalation method
-  ansible.builtin.include_tasks: >-
+  ansible.builtin.include_tasks:
     cfg_priv_ssh_cmd_{{ ansible_become_method }}.yml
   when:
     - use_sw_mgmt
@@ -34,7 +34,7 @@
   become: true
   register: priv_user_test_reg
   changed_when: false
-  failed_when: >-
+  failed_when:
     priv_user_test_reg['stdout_lines'][0] | default != '0'
     or priv_user_test_reg['rc'] != 0
   vars:

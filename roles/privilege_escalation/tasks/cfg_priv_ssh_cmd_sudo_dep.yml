@@ -10,7 +10,6 @@
     name: "{{ sudo_dep_item['role'] }}"
     public: true
   when:
-    - >-
-        sudo_dep_item['role'] not in ansible_role_names
-        or sudo_dep_item['dupes'] | default(false)
+    - sudo_dep_item['role'] not in ansible_role_names
+      or sudo_dep_item['dupes'] | default(false)
     - sudo_dep_item['condition'] | default(true)

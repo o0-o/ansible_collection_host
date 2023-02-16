@@ -62,3 +62,10 @@
     - o0_o.host.privilege_escalation
     #- o0_o.host.software_management
     #- o0_o.host.mandatory_access_control
+
+  tasks:
+
+    - name: Configure time on RouterOS hosts
+      ansible.builtin.include_role:
+        name: o0_o.host.time
+      when: ansible_network_os | default == 'community.network.routeros'

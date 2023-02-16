@@ -22,8 +22,7 @@
 
     - name: The previous task would have resulted in a change (check mode)
       ansible.builtin.debug:
-        msg: >-
-          The {{ pkg_mgr_var['cmd'] }} package manager would have checked
+        msg: The {{ pkg_mgr_var['cmd'] }} package manager would have checked
           for updates.
       register: pkg_mgr_cmd_reg
       failed_when: pkg_mgr_cmd_reg['rc'] not in success_codes_var

@@ -8,7 +8,7 @@
 - name: Scope time zone for general use
   ansible.builtin.set_fact:
     tz: "{{ tz }}"
-  changed_when: pre_vars['tz'] != tz
+  changed_when: pre_vars['tz'] | default != tz
   notify: update host inventory variables
 
 - name: Run time definition SSH dependencies

@@ -4,12 +4,11 @@
 #
 ########################################################################
 
-- name: Run role dependencies for software management configuration
+- name: Run role dependency for software management configuration
   ansible.builtin.include_role:
     name: "{{ sw_mgmt_dep_item['role'] }}"
     public: true
   when:
-    - >-
-        sw_mgmt_dep_item['role'] not in ansible_role_names
-        or sw_mgmt_dep_item['dupes'] | default(false)
+    - sw_mgmt_dep_item['role'] not in ansible_role_names
+      or sw_mgmt_dep_item['dupes'] | default(false)
     - sw_mgmt_dep_item['condition'] | default(true)

@@ -11,8 +11,7 @@
   loop_control:
     loop_var: sw_mgmt_dep_item
 
-- name: >-
-    Use OS default package manager repository configurations if none are
+- name: Use OS default package manager repository configurations if none are
     defined
   ansible.builtin.set_fact:
     repos: "{{ os_pkg_mgr_repos[os_name] }}"
@@ -25,8 +24,7 @@
   ansible.builtin.include_tasks: "{{ tasks_file_var }}"
   vars:
     sys_var: "{{ ansible_system | default(sys) | lower }}"
-    tasks_file_var: >-
-      tasks/cfg_sw_ssh_{{ sys_var }}{{ tasks_file_suffix }}.yml
+    tasks_file_var: "tasks/cfg_sw_ssh_{{ sys_var }}{{ tasks_file_suffix }}.yml"
   when: lookup('ansible.builtin.fileglob', tasks_file_var) != []
 
 # Configure package manager and repositories

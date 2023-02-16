@@ -17,7 +17,7 @@
                       'vars',
                       skip=true ) }}"
   #TODO: remove this condition when Arch and Pi are fixed
-  when: >-
+  when:
     mac is undefined
     or mac | default('', true) != ''
 
@@ -35,7 +35,7 @@
 - name: Define mandatory access control
   ansible.builtin.set_fact:
     mac: "{{ mac | default(none) }}"
-  changed_when: >-
+  changed_when:
     pre_vars['mac'] is undefined
     or pre_vars['mac'] | default('', true) != mac | default('', true)
   notify: update host inventory variables

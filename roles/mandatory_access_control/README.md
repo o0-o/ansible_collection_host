@@ -22,7 +22,7 @@ The `ansible_mac_deps` list contains the names of packages that are required on 
 - `o0_o.host.time`
 - `o0_o.host.software_management`
 - `o0_o.host.python_interpreter`
-- `o0_o.posix`
+- `ansible.posix`
 
 ## Example Playbook
 

@@ -15,7 +15,7 @@
 # success. Break loop on change to avoid installing it twice.
 - name: Install Python (raw)
   ansible.builtin.raw: >-
-    {{ ansible_become_method | default }}
+    {{ ansible_become_method }}
     {{ pkg_mgr_var['install']['cmd'] | default( pkg_mgr_var['cmd'] ) }}
     {{ pkg_mgr_var['install']['arg'] | default }}
     {{ pkg_mgr_var['install']['opts'] | default([]) | join(' ') }}
@@ -27,10 +27,9 @@
     - install_python_reg['rc'] != 0 or install_python_reg is not changed
   changed_when:
     - install_python_reg['rc'] == 0
-    - >-
-        install_python_reg['stdout_lines']
-        | select( 'match', pkg_mgr_var['install']['changed_out_re'] )
-        != []
+    - install_python_reg['stdout_lines']
+      | select( 'match', pkg_mgr_var['install']['changed_out_re'] )
+      != []
   retries: 3
   until: install_python_reg is skipped or install_python_reg is changed
   vars:

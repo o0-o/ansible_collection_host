@@ -1,9 +1,8 @@
 galaxy_info:
   role_name: software_management
   author: o0-o <o@o0-o.ooo>
-  description: >-
-    Configure software management including package managers, repositories and
-    any other system software management
+  description: Configure software management including package managers,
+    repositories and any other system software management
   #company: your company (optional)
 
   # If the issue tracker for your role is not on github, uncomment the

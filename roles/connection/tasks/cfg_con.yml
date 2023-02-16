@@ -15,7 +15,7 @@
       - "{{ ansible_host }}"
   register: con_ping_reg
   changed_when: false
-  failed_when: >-
+  failed_when:
     con_ping_reg['rc'] != 0
     or (  ansible_host == '127.0.0.1'
           and ansible_port | default('22') | string == '22' )

@@ -23,6 +23,6 @@
   ignore_unreachable: true
   timeout: "{{ con_timeout }}"
   retries: "{{ con_retries }}"
-  when: >-
+  when:
     test_con_reg['unreachable'] | default(false)
     or test_con_reg['failed'] | default(true)

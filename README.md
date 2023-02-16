@@ -70,6 +70,11 @@ Versions 2.11+
 
 ```shell
 pip install ansible-pylibssh #o0_o.inventory will do this for you
+ansible-galaxy collection install ansible.netcommon
+ansible-galaxy collection install ansible.posix
+ansible-galaxy collection install community.general
+ansible-galaxy collection install community.routeros
+ansible-galaxy collection install community.network
 ansible-galaxy role install o0_o.inventory
 ansible-galaxy collection install o0_o.host
 ```
@@ -84,15 +89,18 @@ collections:
   - name: o0_o.host
 ```
 
+A `requirements.yml` is included with this collection.
+
 Note that if you install the collection from Ansible Galaxy, it will not be upgraded automatically when you upgrade the `ansible` package. To upgrade the collection to the latest available version, run the following command:
+
 ```shell
 ansible-galaxy collection install o0_o.host --upgrade
 ```
 
-You can also install a specific version of the collection, for example, if you need to downgrade when something is broken in the latest version (please report an issue in this repository). Use the following syntax to install version `0.1.0`:
+You can also install a specific version of the collection, for example, if you need to downgrade when something is broken in the latest version (please report an issue in this repository). Use the following syntax to install version `1.0.0`:
 
 ```shell
-ansible-galaxy collection install o0_o.host:==0.1.0
+ansible-galaxy collection install o0_o.host:==1.0.0
 ```
 
 See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guide/collections_using.html) for more details.
@@ -137,6 +145,7 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 
 ### Playbooks
 - Host configuration milestones
+  - ~~Milestone 1~~
 
 ## More information
 

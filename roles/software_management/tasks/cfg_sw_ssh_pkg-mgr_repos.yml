@@ -8,8 +8,8 @@
 #
 ########################################################################
 
-- name: >-
-    List configuration files currently in repositories configuration directory
+- name: List configuration files currently in repositories configuration
+    directory
   ansible.builtin.command:
     argv:
       - ls

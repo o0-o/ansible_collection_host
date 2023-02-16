@@ -25,8 +25,8 @@ authors:
 
 ### OPTIONAL but strongly recommended
 # A short summary description of the collection
-description: >-
-  Apply generalized configuration to hosts across various operating systems
+description: Apply generalized configuration to hosts across various operating
+  systems
 
 # Either a single license or a list of licenses for content inside of a
 # collection. Ansible Galaxy currently only accepts
@@ -67,6 +67,8 @@ tags:
 # set and are separated by ','
 dependencies:
   ansible.netcommon: '>=2.6.1'
+  ansible.posix: '>=1.5.1'
+  community.general: '>=6.3.0'
   community.network: '>=4.0.1'
   community.routeros: '>=2.0.0'
 
@@ -74,7 +76,7 @@ dependencies:
 repository: https://github.com/o0-o/ansible_collection_host
 
 # The URL to any online docs
-documentation: >-
+documentation:
   https://github.com/o0-o/ansible_collection_host/blob/main/README.md
 
 # The URL to the homepage of the collection/project

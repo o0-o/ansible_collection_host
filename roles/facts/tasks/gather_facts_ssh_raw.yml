@@ -37,14 +37,15 @@
   when: sys | lower == 'linux'
 
 - name: Try to use the which command (raw)
-  ansible.builtin.raw: >-
-     unset which; unalias which 2>/dev/null || true; which which
+  ansible.builtin.raw: unset which;
+    unalias which 2>/dev/null || true;
+    which which
   register: which_reg
   changed_when: false
   failed_when: false
 
 - name: Try to use the command shell built-in (raw)
-  ansible.builtin.raw: >-
+  ansible.builtin.raw:
     unset command; unalias command 2>/dev/null || true; command -v command
   register: command_reg
   changed_when: false

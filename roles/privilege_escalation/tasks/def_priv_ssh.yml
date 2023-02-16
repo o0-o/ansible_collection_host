@@ -37,7 +37,7 @@
           | first }}
     ansible_become_method_var: "{{  ( priv_user == 'root' )
                                     | ternary(none, become_cmd_var) }}"
-  changed_when: >-
+  changed_when:
     pre_vars['ansible_become_method'] is undefined
     or pre_vars['ansible_become_method'] | default != ansible_become_method_var
   notify: update host inventory variables

@@ -1,9 +1,8 @@
 galaxy_info:
   role_name: time
   author: o0-o <o@o0-o.ooo>
-  description: >-
-    Configure the time zone and sync time with localhost if it is outside of
-    the configured tolerance
+  description: Configure the time zone and sync time with localhost if it is
+    outside of the configured tolerance
   #company: your company (optional)
 
   # If the issue tracker for your role is not on github, uncomment the

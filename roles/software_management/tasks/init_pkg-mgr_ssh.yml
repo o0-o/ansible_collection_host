@@ -17,19 +17,21 @@
   loop_control:
     loop_var: env_var
 
-- name: >-
-    Run tasks to initialize the package manager including GPG keys, cleaning
-    and updating the cache
-  ansible.builtin.include_tasks: >-
-    run_pkg-mgr_command_ssh{{ tasks_file_suffix }}.yml
+- name: Run tasks to initialize the package manager including GPG keys,
+    cleaning and updating the cache
+  ansible.builtin.include_tasks:
+    file: "run_pkg-mgr_command_ssh{{ tasks_file_suffix }}.yml"
   vars:
     cmd_var: >-
-      {{  ( [ pkg_mgr_var[cmd_name_item]['cmd'] | default( pkg_mgr_var['cmd'] ),
-              pkg_mgr_var[cmd_name_item]['arg'] | default('') ]
-            + pkg_mgr_var[cmd_name_item]['opts'] | default([]) )
+      {{  ( [ pkg_mgr_var[cmd_name_item]['cmd']
+              | default( pkg_mgr_var['cmd'] ),
+              pkg_mgr_var[cmd_name_item]['arg']
+              | default('') ]
+            + pkg_mgr_var[cmd_name_item]['opts']
+              | default([]) )
           | reject('==', '') }}
-    success_codes_var: "{{ pkg_mgr_var[cmd_name_item]['success_codes']
-                          | default( [0] ) }}"
+    success_codes_var: "{{  pkg_mgr_var[cmd_name_item]['success_codes']
+                            | default( [0] ) }}"
 #  when: pkg_mgr_var[cmd_name_item] is defined #breaks the loop order
   loop:
     - init
