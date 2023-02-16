@@ -13,4 +13,5 @@ time_sync_tolerance: 5 #minutes
 
 # Dependencies
 time_deps:
+  - role: o0_o.host.facts
   - role: o0_o.host.privilege_escalation
