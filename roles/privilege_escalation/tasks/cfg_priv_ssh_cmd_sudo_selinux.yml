@@ -7,7 +7,7 @@
 
 - name: Define the sudo passwordless configuration line with SELinux
   ansible.builtin.set_fact:
-    sudo_passwordless_adm:
+    sudo_passwordless_adm: >-
       ALL=(ALL) TYPE=sysadm_t ROLE=sysadm_r NOPASSWD: ALL
 
 - name: Check if the user's SELinux context needs to change
