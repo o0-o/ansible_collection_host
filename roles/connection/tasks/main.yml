@@ -21,15 +21,19 @@
     ansible_host: "{{ ansible_host }}"
     ansible_connection: "{{ ansible_connection }}"
 
-- name: Install/update pip and ansible-pylibssh on localhost
+- name: "Install/update pip and {{ net_ssh_method }}"
   ansible.builtin.pip:
     name:
       - pip
-      - ansible-pylibssh
+      - "{{ net_ssh_var }}"
     state: latest
   delegate_to: 127.0.0.1
   run_once: true
-  when: use_libssh
+  vars:
+    net_ssh_pkg_var: >-
+      {{  ( net_ssh_method == 'libssh' )
+          | ternary('ansible-pylibssh', 'paramiko') }}
+  when: net_ssh_method in ['libssh', 'paramiko']
 
 - name: Run tasks to test the connection with existing configuration
   ansible.builtin.include_tasks: test_con.yml

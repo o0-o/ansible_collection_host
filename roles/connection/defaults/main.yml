@@ -6,9 +6,12 @@
 ########################################################################
 
 use_con: false
-use_libssh: true
 con_retries: 2
 con_timeout: 12
+
+# Cannot use libssh until this is resolved:
+# https://github.com/ansible-collections/community.routeros/issues/132
+net_ssh_method: paramiko
 
 default_adms:
   - root

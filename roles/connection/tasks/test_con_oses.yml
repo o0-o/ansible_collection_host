@@ -13,7 +13,7 @@
   vars:
     ansible_connection: ansible.netcommon.network_cli
     ansible_network_os: community.network.routeros
-    ansible_network_cli_ssh_type: libssh
+    ansible_network_cli_ssh_type: "{{ net_ssh_method }}"
   when:
-    - use_libssh
     - not use_con
+    - net_ssh_method in ['libssh', 'paramiko']

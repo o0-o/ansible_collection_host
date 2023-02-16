@@ -24,13 +24,15 @@ use_con: false
 
 Once a connection is successfully established, this is set to `true`. This is used to control the logical flow of the role.
 
-#### Use libssh
+#### Network CLI SSH method
 
 ```yaml
-use_libssh: true
+net_ssh_method: paramiko
 ```
 
-When `true`, this role will install or update `pip` and `ansible-pylibssh` on `localhost`.
+This value will be used for `ansible_network_cli_ssh_type` when probing for network devices. It can be set to `paramiko` or `libssh`. If set to ether values, this role will automatically installing/updating `pip` and either `paramkio` or `ansible-plylibssh` respectively on `localhost`.
+
+Setting `net_ssh_method` to anything else will skip the local `pip` operation as well as attempts to connect using `ansible.netcommon.network_cli`.
 
 #### Connection retries
 
