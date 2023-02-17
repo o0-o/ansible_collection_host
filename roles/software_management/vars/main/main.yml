@@ -9,6 +9,7 @@
 cfg_sw_ssh_deps:
   - role: o0_o.host.privilege_escalation
   - role: o0_o.host.time
+    dupes: true
 
 # Default architectures by operating system. See defaults/main/main.yml
 arches:
