@@ -17,18 +17,18 @@
   loop_control:
     loop_var: time_dep_item
 
-- name: Run tasks to define the time on the remote host
-  ansible.builtin.include_tasks:
-    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
-                      'tasks',
-                      prefix='def_time_' ) }}"
-
 - name: Run tasks to configure the time zone
   ansible.builtin.include_tasks:
     file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
                       'tasks',
                       prefix='cfg_time_zone_' ) }}"
   when: not use_raw
+
+- name: Run tasks to define the time on the remote host
+  ansible.builtin.include_tasks:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'tasks',
+                      prefix='def_time_' ) }}"
 
 - name: Run tasks to sync time with localhost if necessary
   ansible.builtin.include_tasks:
