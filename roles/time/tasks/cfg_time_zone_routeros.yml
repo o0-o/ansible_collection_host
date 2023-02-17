@@ -41,9 +41,9 @@
       community.routeros.command:
         commands:
           - put [/system clock get time-zone-name]
+      register: ros_tz_reg
       changed_when: false
       failed_when: ros_tz_reg['stdout_lines'][0][0] != 'GMT'
-      register: ros_tz_reg
 
   rescue:
 
@@ -60,5 +60,5 @@
       register: ros_confirm_tz_reg
       changed_when: ansible_check_mode
       failed_when:
-        - ros_confirm_tz_reg['stdout_lines'][0][0] != tz
+        - ros_confirm_tz_reg['stdout_lines'][0][0] != 'GMT'
         - not ansible_check_mode
