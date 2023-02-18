@@ -20,25 +20,22 @@
   ansible.builtin.include_tasks: install_python_ssh_raw.yml
   when: ansible_python_interpreter | default('') == ''
 
-- name: Re-run facts role if the Python interpreter has changed
+- name: Re-run previously completed roles if the Python interpreter has changed
   ansible.builtin.include_role:
-    name: o0_o.host.facts
+    name: "{{ prev_role_item }}"
     allow_duplicates: true
     public: true
+  vars:
+    prev_roles_not_parent_var: >-
+      {{  ansible_role_names
+          | difference(ansible_parent_role_names) }}
   when:
-    - pre_vars['ansible_python_interpreter'] is undefined
-        or  pre_vars['ansible_python_interpreter'] | default
-            != ansible_python_interpreter
-
-- name: Re-run Python installation dependencies Python was installed
-  ansible.builtin.include_role:
-    name: "{{ py_install_dep_item }}"
-    allow_duplicates: true
-    public: true
-  when:
-    - install_python_reg is defined
-    - install_python_reg is changed
-    - py_install_dep_item not in ansible_parent_role_names
-  loop: "{{ install_python_ssh_raw_deps }}"
+    - def_python_reg is changed or install_python_reg | default({}) is changed
+    - prev_role_item in prev_roles_not_parent_var
+  loop:
+    - o0_o.host.facts
+    - o0_o.host.time
+    - o0_o.host.privilege_escalation
+    - o0_o.host.software_management
   loop_control:
-    loop_var: py_install_dep_item
+    loop_var: prev_role_item

@@ -5,9 +5,10 @@
 #
 ########################################################################
 
-- name: Run the role dependencies for Sudo configuration
+- name: Run the role dependency for Sudo configuration
   ansible.builtin.include_role:
     name: "{{ sudo_dep_item['role'] }}"
+    allow_duplicates: true
     public: true
   when:
     - sudo_dep_item['role'] not in ansible_role_names

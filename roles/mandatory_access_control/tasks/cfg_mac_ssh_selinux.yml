@@ -18,6 +18,4 @@
     public: true
   vars:
     priv_role_var: o0_o.host.privilege_escalation
-  when:
-    - priv_role_var not in ansible_parent_role_names | default([])
-    - pre_vars['mac'] | default != 'selinux'
+  when: priv_role_var not in ansible_parent_role_names | default([])

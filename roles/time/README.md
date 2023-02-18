@@ -16,10 +16,6 @@ The time must be accurate on `localhost`.
 
 #### Time zone
 
-```yaml
-tz: "{{ ansible.builtin.pipe('date +%Z') | regex_replace('UTC', 'GMT') }}"
-```
-
 We use localhost's time zone by default. Not all systems support UTC as a time zone valuebecause UTC is not technically a time zone. It is a standard that dictates the use of GMT.
 
 #### Time sync tolerance

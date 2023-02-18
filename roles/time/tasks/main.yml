@@ -5,9 +5,21 @@
 #
 ########################################################################
 
-- name: Scope time zone for general use
+- name: BEGIN HOST TIME ROLE
   ansible.builtin.set_fact:
-    tz: "{{ tz }}"
+    role_call_ident: "{{ ident_var }}"
+    role_call: "{{ role_call | default([]) + line_var }}"
+  vars:
+    ident_var: "{{ role_call_ident | default(-1) | int + 1 }}"
+    line_var:
+      - "{{ ( '  ' * ident_var | int ) | string + ansible_role_name }}"
+
+# Do not set this in defaults/
+- name: Define the time zone (use localhost's by default)
+  ansible.builtin.set_fact:
+    tz: "{{ tz
+            | default(  lookup('ansible.builtin.pipe', 'date +%Z')
+                        | regex_replace('UTC', 'GMT') ) }}"
   changed_when: pre_vars['tz'] | default != tz
   notify: update host inventory variables
 
@@ -42,3 +54,11 @@
                       - remote_datetime | to_datetime ).total_seconds() / 60 )
                   | abs }}"
   when: diff_var | int > time_sync_tolerance
+
+- name: Time is synced
+  ansible.builtin.set_fact:
+    time_sync: true
+
+- name: END HOST TIME ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ role_call_ident | int - 1 }}"

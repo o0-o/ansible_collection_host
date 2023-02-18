@@ -5,6 +5,15 @@
 #
 ########################################################################
 
+- name: BEGIN HOST MANDATORY ACCESS CONTROL ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ ident_var }}"
+    role_call: "{{ role_call | default([]) + line_var }}"
+  vars:
+    ident_var: "{{ role_call_ident | default(-1) | int + 1 }}"
+    line_var:
+      - "{{ ( '  ' * ident_var | int ) | string + ansible_role_name }}"
+
 - name: Initialize/reset the post-run role list
   ansible.builtin.set_fact:
     mac_post_roles: []
@@ -12,3 +21,7 @@
 - name: Run tasks to configure mandatory access control on an SSH host
   ansible.builtin.include_tasks: cfg_mac_ssh.yml
   when: ansible_connection == 'ssh'
+
+- name: END HOST MANDATORY ACCESS CONTROL ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ role_call_ident | int - 1 }}"

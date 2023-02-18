@@ -7,9 +7,10 @@
 
 # Dependencies
 cfg_sw_ssh_deps:
-  - role: o0_o.host.privilege_escalation
   - role: o0_o.host.time
     dupes: true
+    condition: "{{ not time_sync | default(false) }}"
+  - role: o0_o.host.privilege_escalation
 
 # Default architectures by operating system. See defaults/main/main.yml
 arches:

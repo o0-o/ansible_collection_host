@@ -66,6 +66,62 @@ Versions 2.11+
     - o0_o.host.python_interpreter
 ```
 
+Realistically, the included playbook(s) are best for most cases. These will run a collection of roles that bring hosts to a configuration milestone.
+
+```shell
+ansible-playbook -i inventory o0_o.host.milestone_001
+```
+
+Symlinks provide convenient abbreviations. Milestone playbooks always target the `all` hosts group. It is assumed that the user will use `ansible-playbook` flags to specific which hosts will be targeted.
+
+```shell
+ansible-playbook -i inventory o0_o.host.m1 -l "www*"
+```
+
+The milestone playbooks also implement a _Role Call_ feature which prints a summary of roles as they were executed at the end of the play (even if the play fails). Tabbing indicates parent/dependency relationships.
+
+```shell
+ok: [openbsd7.hq.example.com] => {
+    "role_call": [
+        "o0_o.host.connection",
+        "  o0_o.inventory",
+        "o0_o.host.software_management",
+        "  o0_o.host.time",
+        "    o0_o.host.facts",
+        "    o0_o.host.privilege_escalation",
+        "      o0_o.host.python_interpreter",
+        "        o0_o.host.software_management",
+        "          o0_o.host.time",
+        "        o0_o.host.facts",
+        "      o0_o.host.mandatory_access_control"
+    ]
+}
+ok: [fedora36.hq.example.com] => {
+    "role_call": [
+        "o0_o.host.connection",
+        "  o0_o.inventory",
+        "o0_o.host.software_management",
+        "  o0_o.host.time",
+        "    o0_o.host.facts",
+        "    o0_o.host.privilege_escalation",
+        "      o0_o.host.software_management",
+        "        o0_o.host.time",
+        "      o0_o.host.python_interpreter",
+        "        o0_o.host.facts",
+        "      o0_o.host.mandatory_access_control"
+    ]
+}
+ok: [routeros7.hq.example.com] => {
+    "role_call": [
+        "o0_o.host.connection",
+        "  o0_o.inventory",
+        "o0_o.host.software_management"
+    ]
+}
+```
+
+In this example, 3 hosts take different paths through an import of the `software_management` role. OpenBSD does not include a Python interpreter while Fedora does, and the role isn't applicable to RouterOS, so only the `connection` dependency (from `meta/main.yml`) has any effect.
+
 ### Installing the collection from Ansible Galaxy
 
 ```shell

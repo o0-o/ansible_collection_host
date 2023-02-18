@@ -8,6 +8,7 @@
 - name: Run role dependency for time definition
   ansible.builtin.include_role:
     name: "{{ time_dep_item['role'] }}"
+    allow_duplicates: true
     public: true
   when:
     - time_dep_item['role'] not in ansible_role_names

@@ -5,13 +5,11 @@
 #
 ########################################################################
 
-# Use localhost's time zone by default.
-tz: "{{ lookup('ansible.builtin.pipe', 'date +%Z')
-        | regex_replace('UTC', 'GMT') }}"
-
+time_sync: false
 time_sync_tolerance: 5 #minutes
 
 # Dependencies
 time_deps:
   - role: o0_o.host.facts
+    condition: "{{ use_raw is undefined }}"
   - role: o0_o.host.privilege_escalation

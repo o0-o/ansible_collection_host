@@ -5,6 +5,15 @@
 #
 ########################################################################
 
+- name: BEGIN HOST SOFTWARE MANAGEMENT ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ ident_var }}"
+    role_call: "{{ role_call | default([]) + line_var }}"
+  vars:
+    ident_var: "{{ role_call_ident | default(-1) | int + 1 }}"
+    line_var:
+      - "{{ ( '  ' * ident_var | int ) | string + ansible_role_name }}"
+
 # Skip on network systems with no software management systems.
 - name: Run tasks to configure software management on the host
   ansible.builtin.include_tasks: cfg_sw_ssh.yml
@@ -13,3 +22,7 @@
 - name: It is safe to use software management
   ansible.builtin.set_fact:
     use_sw_mgmt: true
+
+- name: END HOST SOFTWARE MANAGEMENT ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ role_call_ident | int - 1 }}"

@@ -54,7 +54,9 @@
 
 - name: Run tasks to configure the Ansible user with SELinux context
   ansible.builtin.include_tasks: cfg_priv_ssh_cmd_sudo_selinux.yml
-  when: mac | default == 'selinux'
+  when:
+    - use_mac | default('false')
+    - mac | default == 'selinux'
 
 - name: Configure user with passwordless sudo privileges
   ansible.builtin.template:

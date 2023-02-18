@@ -5,6 +5,15 @@
 #
 ########################################################################
 
+- name: BEGIN HOST FACTS ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ ident_var }}"
+    role_call: "{{ role_call | default([]) + line_var }}"
+  vars:
+    ident_var: "{{ role_call_ident | default(-1) | int + 1 }}"
+    line_var:
+      - "{{ ( '  ' * ident_var | int ) | string + ansible_role_name }}"
+
 - name: Run tasks to determine if the raw module should be used
   ansible.builtin.include_tasks: def_raw.yml
 
@@ -34,3 +43,7 @@
   vars:
     root_grp_var: "{{ root_grps[ ansible_system | default(sys) | lower ] }}"
   when: root_grp_var is defined
+
+- name: END HOST FACTS ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ role_call_ident | int - 1 }}"

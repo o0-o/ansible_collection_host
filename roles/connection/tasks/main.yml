@@ -9,6 +9,15 @@
 #
 ########################################################################
 
+- name: BEGIN HOST CONNECTION ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ ident_var }}"
+    role_call: "{{ role_call | default([]) + line_var }}"
+  vars:
+    ident_var: "{{ role_call_ident | default(-1) | int + 1 }}"
+    line_var:
+      - "{{ ( '  ' * ident_var | int ) | string + ansible_role_name }}"
+
 - name: Run the o0_o.inventory role
   ansible.builtin.include_role:
     name: o0_o.inventory
@@ -41,3 +50,7 @@
 - name: Run tasks to configure the connection if necessary
   ansible.builtin.include_tasks: cfg_con.yml
   when: not use_con
+
+- name: END HOST CONNECTION ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ role_call_ident | int - 1 }}"

@@ -5,7 +5,20 @@
 #
 ########################################################################
 
+- name: BEGIN HOST PYTHON INTERPRETER ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ ident_var }}"
+    role_call: "{{ role_call | default([]) + line_var }}"
+  vars:
+    ident_var: "{{ role_call_ident | default(-1) | int + 1 }}"
+    line_var:
+      - "{{ ( '  ' * ident_var | int ) | string + ansible_role_name }}"
+
 # Skip on network systems where Python interpreter is not applicable.
 - name: Run tasks to configure the Python interpreter
   ansible.builtin.include_tasks: cfg_python_ssh.yml
   when: ansible_connection == 'ssh'
+
+- name: END HOST PYTHON INTERPRETER ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ role_call_ident | int - 1 }}"

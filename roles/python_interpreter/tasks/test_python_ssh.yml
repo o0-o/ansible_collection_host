@@ -15,10 +15,10 @@
     - name: Scope ansible_python_interpreter for general use
       ansible.builtin.set_fact:
         ansible_python_interpreter: "{{ ansible_python_interpreter }}"
+      register: def_python_reg
       changed_when:
-        pre_vars['ansible_python_interpreter'] is undefined
-        or  pre_vars['ansible_python_interpreter'] | default
-            != ansible_python_interpreter
+        pre_vars['ansible_python_interpreter'] | default
+        != ansible_python_interpreter
       notify: update host inventory variables
 
   rescue:

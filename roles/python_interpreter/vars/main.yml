@@ -12,4 +12,4 @@ install_python_ssh_raw_deps:
   - role: o0_o.host.privilege_escalation
   - role: o0_o.host.software_management
     dupes: true
-    condition: not use_sw_mgmt | default(false)
+    condition: "{{ not use_sw_mgmt | default(false) }}"
