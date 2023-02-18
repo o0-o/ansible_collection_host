@@ -81,46 +81,46 @@ ansible-playbook -i inventory o0_o.host.m1 -l "www*"
 The milestone playbooks also implement a _Role Call_ feature which prints a summary of roles as they were executed at the end of the play (even if the play fails). Tabbing indicates parent/dependency relationships.
 
 ```shell
+ok: [debian11.hq.example.com] => {
+    "role_call": [
+        "o0_o.host.connection",
+        "  o0_o.inventory",
+        "o0_o.host.time",
+        "  o0_o.host.facts",
+        "  o0_o.host.privilege_escalation",
+        "    o0_o.host.software_management",
+        "      o0_o.host.time",
+        "    o0_o.host.python_interpreter",
+        "      o0_o.host.facts",
+        "      o0_o.host.software_management",
+        "    o0_o.host.mandatory_access_control"
+    ]
+}
 ok: [openbsd7.hq.example.com] => {
     "role_call": [
         "o0_o.host.connection",
         "  o0_o.inventory",
-        "o0_o.host.software_management",
-        "  o0_o.host.time",
-        "    o0_o.host.facts",
-        "    o0_o.host.privilege_escalation",
-        "      o0_o.host.python_interpreter",
-        "        o0_o.host.software_management",
-        "          o0_o.host.time",
-        "        o0_o.host.facts",
-        "      o0_o.host.mandatory_access_control"
-    ]
-}
-ok: [fedora36.hq.example.com] => {
-    "role_call": [
-        "o0_o.host.connection",
-        "  o0_o.inventory",
-        "o0_o.host.software_management",
-        "  o0_o.host.time",
-        "    o0_o.host.facts",
-        "    o0_o.host.privilege_escalation",
-        "      o0_o.host.software_management",
-        "        o0_o.host.time",
-        "      o0_o.host.python_interpreter",
-        "        o0_o.host.facts",
-        "      o0_o.host.mandatory_access_control"
+        "o0_o.host.time",
+        "  o0_o.host.facts",
+        "  o0_o.host.privilege_escalation",
+        "    o0_o.host.software_management",
+        "      o0_o.host.time",
+        "    o0_o.host.python_interpreter",
+        "    o0_o.host.mandatory_access_control"
     ]
 }
 ok: [routeros7.hq.example.com] => {
     "role_call": [
         "o0_o.host.connection",
         "  o0_o.inventory",
-        "o0_o.host.software_management"
+        "o0_o.host.time",
+        "  o0_o.host.facts",
+        "  o0_o.host.privilege_escalation"
     ]
 }
 ```
 
-In this example, 3 hosts take different paths through an import of the `software_management` role. OpenBSD does not include a Python interpreter while Fedora does, and the role isn't applicable to RouterOS, so only the `connection` dependency (from `meta/main.yml`) has any effect.
+In this example, 3 hosts take different paths through milestone 1. In this case, Debian was newly provisioned so the dependencies were more complex. OpenBSD here was already configured so it's run is simpler and there were no changes. Many of the roles are not applicable to RouterOS so it runs much fewer.
 
 ### Installing the collection from Ansible Galaxy
 
