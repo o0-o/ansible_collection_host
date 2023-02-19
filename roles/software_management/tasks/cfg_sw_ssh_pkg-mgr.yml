@@ -89,7 +89,7 @@
     # The full path to an extraneous configuration file (the loop
     # variable here is defined later in this included tasks file).
     extra_file_path_var: >-
-      {{ repos_cfg_dir_var }}/{{ extra_file_item}}
+      {{ repos_cfg_dir_var }}/{{ extra_file_item }}
     # Specific to the loop item
     repo_var: "{{ repo_list[repo_index] }}"
     cfg_file_var: >-

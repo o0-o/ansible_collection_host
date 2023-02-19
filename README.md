@@ -28,7 +28,11 @@ Versions 2.11+
 
 ## External requirements
 
-- `ansible-pylibssh`
+`paramiko` or `ansible-pylibssh`
+
+Note that there is currently a bug with `libssh` on RouterOS. `paramiko` is the only option for RouterOS hosts until that is resolved.
+
+https://github.com/ansible-collections/community.routeros/issues/132
 
 ## Supported connections
 
@@ -125,7 +129,10 @@ In this example, 3 hosts take different paths through milestone 1. In this case,
 ### Installing the collection from Ansible Galaxy
 
 ```shell
+pip install paramiko #o0_o.inventory will do this for you
+# OR #
 pip install ansible-pylibssh #o0_o.inventory will do this for you
+
 ansible-galaxy collection install ansible.netcommon
 ansible-galaxy collection install ansible.posix
 ansible-galaxy collection install community.general
@@ -163,23 +170,25 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 
 ## Roadmap
 
+Italics imply completion (if there is a strikethrough format that works across Github Markdown and reStructedText, please let me know).
+
 ### Plugins
 
 #### Lookup
-- ~~First found tasks, vars or template file based on system attributes~~
+- _First found tasks, vars or template file based on system attributes_
 
 ### Roles
-- ~~Connection~~
-- ~~Privilege escalation~~
+- _Connection_
+- _Privilege escalation_
   - Add privileged user to ancillary admin groups
   - Consider automatic new Ansible user feature here instead of its own role
-- ~~Time~~
-- ~~Software Management~~
+- _Time_
+- _Software Management_
   - Handle `/etc/sources.list.d` instead of only `/etc/sources.list` on Debian distributions, specifically for Raspbian
-- ~~Python interpreter~~
-- ~~Facts~~
+- _Python interpreter_
+- _Facts_
   - Identify Raspbian vs plain Debian
-- ~~Mandatory access control (MAC)~~
+- _Mandatory access control (MAC)_
   - Implement bootloader dependency
 - Bootloader
 - Schedule
@@ -201,7 +210,7 @@ See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guid
 
 ### Playbooks
 - Host configuration milestones
-  - ~~Milestone 1~~
+  - _Milestone 1_
 
 ## More information
 

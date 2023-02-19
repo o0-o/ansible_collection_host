@@ -162,6 +162,7 @@ import ansible.plugins.lookup.first_found as first_found
 
 from ansible.errors import AnsibleLookupError
 
+
 class LookupModule(first_found.LookupModule):
 
     def _process_plat_terms(self, terms, variables, kwargs):
@@ -196,7 +197,8 @@ class LookupModule(first_found.LookupModule):
                 'ansible_distribution_major_version',
                 'net_mgr'
             ],
-            [   'ansible_distribution',
+            [
+                'ansible_distribution',
                 'ansible_distribution_major_version',
                 'mac'
             ],
@@ -205,7 +207,7 @@ class LookupModule(first_found.LookupModule):
             ['ansible_distribution', 'mac'],
             ['ansible_distribution'],
             ['ansible_os_family', 'net_mgr'],
-            ['ansible_os_family','mac'],
+            ['ansible_os_family', 'mac'],
             ['ansible_os_family'],
             ['ansible_system', 'net_mgr'],
             ['ansible_system', 'mac'],
