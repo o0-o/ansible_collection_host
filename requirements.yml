@@ -1,0 +1,9 @@
+---
+roles:
+  - name: o0_o.inventory
+collections:
+  - name: ansible.netcommon
+  - name: ansible.posix
+  - name: community.general
+  - name: community.routeros
+  - name: community.network
