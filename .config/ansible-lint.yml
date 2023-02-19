@@ -1,0 +1,12 @@
+---
+exclude_paths:
+  - ../files/
+skip_list:
+  - command-instead-of-module
+  - name[template]
+  - name[casing]
+  - jinja[spacing]
+  - yaml[comments]
+  - '403'
+  - no-handler
+  - no-changed-when
