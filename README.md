@@ -36,8 +36,8 @@ https://github.com/ansible-collections/community.routeros/issues/132
 
 ## Supported connections
 
-- `ssh`
-- `ansible.netcommon.network_cli`
+* `ssh`
+* `ansible.netcommon.network_cli`
 
 ## Included content
 
@@ -45,17 +45,17 @@ https://github.com/ansible-collections/community.routeros/issues/132
 
 #### Lookup
 
-- `first_found_by_host_attributes`
+* `first_found_by_host_attributes`
 
 ### Roles
 
-- `connection`
-- `privilege_escalation`
-- `time`
-- `software`
-- `python_interpreter`
-- `facts`
-- `mandatory_access_control`
+* `connection`
+* `privilege_escalation`
+* `time`
+* `software`
+* `python_interpreter`
+* `facts`
+* `mandatory_access_control`
 
 ## Using this collection
 
@@ -175,52 +175,52 @@ Italics imply completion (if there is a strikethrough format that works across G
 ### Plugins
 
 #### Lookup
-- _First found tasks, vars or template file based on system attributes_
+* _First found tasks, vars or template file based on system attributes_
 
 ### Roles
-- _Connection_
-- _Privilege escalation_
-  - Add privileged user to ancillary admin groups
-  - Consider automatic new Ansible user feature here instead of its own role
-- _Time_
-- _Software Management_
-  - Handle `/etc/sources.list.d` instead of only `/etc/sources.list` on Debian distributions, specifically for Raspbian
-- _Python interpreter_
-- _Facts_
-  - Identify Raspbian vs plain Debian
-- _Mandatory access control (MAC)_
-  - Implement bootloader dependency
-- Bootloader
-- Schedule
-- Ansible user
-- System-specific sane defaults and hardening
-  - Arch Linux
-  - Centos/RHEL 7
-  - Rocky/RHEL 8
-  - Fedora
-  - Debian
-  - Ubuntu
-  - FreeBSD
-  - OpenBSD
-  - macOS
-  - RouterOS
-- Antivirus
-- Auditing
-- Intrusion detection
+* _Connection_
+* _Privilege escalation_
+  * Add privileged user to ancillary admin groups
+  * Consider automatic new Ansible user feature here instead of its own role
+* _Time_
+* _Software Management_
+  * Handle `/etc/sources.list.d` instead of only `/etc/sources.list` on Debian distributions, specifically for Raspbian
+* _Python interpreter_
+* _Facts_
+  * Identify Raspbian vs plain Debian
+* _Mandatory access control (MAC)_
+  * Implement bootloader dependency
+* Bootloader
+* Schedule
+* Ansible user
+* System-specific sane defaults and hardening
+  * Arch Linux
+  * Centos/RHEL 7
+  * Rocky/RHEL 8
+  * Fedora
+  * Debian
+  * Ubuntu
+  * FreeBSD
+  * OpenBSD
+  * macOS
+  * RouterOS
+* Antivirus
+* Auditing
+* Intrusion detection
 
 ### Playbooks
-- Host configuration milestones
-  - _Milestone 1_
+* Host configuration milestones
+  * _Milestone 1_
 
 ## More information
 
-- [Ansible Collection overview](https://github.com/ansible-collections/overview)
-- [Ansible User guide](https://docs.ansible.com/ansible/devel/user_guide/index.html)
-- [Ansible Developer guide](https://docs.ansible.com/ansible/devel/dev_guide/index.html)
-- [Ansible Collections Checklist](https://github.com/ansible-collections/overview/blob/main/collection_requirements.rst)
-- [Ansible Community code of conduct](https://docs.ansible.com/ansible/devel/community/code_of_conduct.html)
-- [The Bullhorn (the Ansible Contributor newsletter)](https://us19.campaign-archive.com/home/?u=56d874e027110e35dea0e03c1&id=d6635f5420)
-- [News for Maintainers](https://github.com/ansible-collections/news-for-maintainers)
+* [Ansible Collection overview](https://github.com/ansible-collections/overview)
+* [Ansible User guide](https://docs.ansible.com/ansible/devel/user_guide/index.html)
+* [Ansible Developer guide](https://docs.ansible.com/ansible/devel/dev_guide/index.html)
+* [Ansible Collections Checklist](https://github.com/ansible-collections/overview/blob/main/collection_requirements.rst)
+* [Ansible Community code of conduct](https://docs.ansible.com/ansible/devel/community/code_of_conduct.html)
+* [The Bullhorn (the Ansible Contributor newsletter)](https://us19.campaign-archive.com/home/?u=56d874e027110e35dea0e03c1&id=d6635f5420)
+* [News for Maintainers](https://github.com/ansible-collections/news-for-maintainers)
 
 ## Licensing
 
