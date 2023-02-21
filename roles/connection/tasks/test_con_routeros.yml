@@ -38,4 +38,7 @@
     pre_vars['ansible_network_os'] | default != ansible_network_os
     or  pre_vars['ansible_network_cli_ssh_type'] | default
         != ansible_network_cli_ssh_type
+  when:
+    - not test_con_reg is failed
+    - not test_con_reg is unreachable
   notify: update host inventory variables
