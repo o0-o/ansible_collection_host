@@ -25,13 +25,12 @@
     name: "{{ prev_role_item }}"
     allow_duplicates: true
     public: true
-  vars:
-    prev_roles_not_parent_var: >-
-      {{  ansible_role_names
-          | difference(ansible_parent_role_names) }}
   when:
     - def_python_reg is changed or install_python_reg | default({}) is changed
-    - prev_role_item in prev_roles_not_parent_var
+    - prev_role_item in ansible_role_names
+    - prev_role_item not in ansible_parent_role_names
+    - not ( prev_role_item == 'o0_o.host.privilege_escalation'
+            and ansible_user == 'root' )
   loop:
     - o0_o.host.facts
     - o0_o.host.time
