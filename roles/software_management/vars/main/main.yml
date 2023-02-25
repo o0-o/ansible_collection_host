@@ -11,6 +11,7 @@ cfg_sw_ssh_deps:
     dupes: true
     condition: "{{ not time_sync | default(false) }}"
   - role: o0_o.host.privilege_escalation
+  - role: o0_o.host.python_interpreter
 
 # Default architectures by operating system. See defaults/main/main.yml
 arches:

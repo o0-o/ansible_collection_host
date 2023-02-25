@@ -49,7 +49,7 @@
 #
 ########################################################################
 
-- name: 'Configuration milestone 001'
+- name: Configuration milestone 1
   hosts: all
   gather_facts: false
   any_errors_fatal: true
@@ -59,13 +59,17 @@
     - name: Try Milestone 1
       block:
 
-        # Important to use import here or it won't appear in
-        # ansible_role_names. With dependencies, the time role will
-        # bring all hosts to equivalent states including network devices
-        # (although many roles will not apply to them).
-        - name: Import the o0_o.host.time role
-          ansible.builtin.import_role:
-            name: o0_o.host.time
+        - name: Include milestone 1 roles
+          ansible.builtin.include_tasks: tasks/include_milestone_role.yml
+          loop:
+            - 'o0_o.host.time'
+            - 'o0_o.host.privilege_escalation'
+            - 'o0_o.host.python_interpreter'
+            - 'o0_o.host.facts'
+            - 'o0_o.host.software_management'
+            - 'o0_o.host.mandatory_access_control'
+          loop_control:
+            loop_var: milestone_role_item
 
         - name: Run handlers
           ansible.builtin.meta: flush_handlers

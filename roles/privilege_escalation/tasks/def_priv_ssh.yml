@@ -39,5 +39,6 @@
                                     | ternary(none, become_cmd_var) }}"
   changed_when:
     pre_vars['ansible_become_method'] is undefined
-    or pre_vars['ansible_become_method'] | default != ansible_become_method_var
+    or pre_vars['ansible_become_method'] | default('', true)
+    != ansible_become_method_var | default('', true)
   notify: update host inventory variables
