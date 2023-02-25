@@ -20,6 +20,7 @@
     or (  ansible_host == '127.0.0.1'
           and ansible_port | default('22') | string == '22' )
   ignore_errors: true
+  check_mode: false
   delegate_to: 127.0.0.1
 
 - name: Run tasks to test the connection with different users
@@ -57,7 +58,7 @@
     - con_ping_reg is failed
   loop: "{{ con_ip4s_var }}"
   loop_control:
-    loop_var: con_ip4_var
+    loop_var: ansible_host
 
 # The host is not reachable. Interrogate Vagrant in case the host is a
 # virtual machine on local NAT.

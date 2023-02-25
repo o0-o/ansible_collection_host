@@ -13,11 +13,12 @@
   ansible.builtin.raw: echo 0
   register: test_con_reg
   changed_when: false
-  until: test_con_reg['stdout_lines'][0] | default == '0'
+  check_mode: false
   ignore_errors: true
   ignore_unreachable: true
   timeout: "{{ con_timeout }}"
   retries: "{{ con_retries }}"
+  until: test_con_reg['stdout_lines'][0] | default == '0'
   when:
     test_con_reg['unreachable'] | default(false)
     or test_con_reg['failed'] | default(true)
