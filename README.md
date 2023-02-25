@@ -119,12 +119,15 @@ ok: [routeros7.hq.example.com] => {
         "  o0_o.inventory",
         "o0_o.host.time",
         "  o0_o.host.facts",
-        "  o0_o.host.privilege_escalation"
+        "  o0_o.host.privilege_escalation",
+        "o0_o.host.python_interpreter",
+        "o0_o.host.software_management",
+        "o0_o.host.mandatory_access_control"
     ]
 }
 ```
 
-In this example, 3 hosts take different paths through milestone 1. In this case, Debian was newly provisioned so the dependencies were more complex. OpenBSD here was already configured so it's run is simpler and there were no changes. Many of the roles are not applicable to RouterOS so it runs much fewer.
+In this example, 3 hosts take different paths through milestone 1. In this case, Debian was newly provisioned so the dependencies were more complex. OpenBSD here was already configured so it's run is simpler and there were no changes. Many of the roles are not applicable to RouterOS so it's run is simpler.
 
 ### Installing the collection from Ansible Galaxy
 
