@@ -46,6 +46,7 @@
     backup: true
     validate: "{{ visudo_bin }} -cf %s"
   become: "{{ not is_root_var }}"
+  register: cfg_sudoers_reg
   vars:
     sudo_vers_var: >-
       {{ sudo_vers_reg['stdout_lines'][0] | split(' ') | last }}
@@ -67,6 +68,7 @@
     mode: "{{ sudo_cfg_subdir_file_mode }}"
     validate: "{{ visudo_bin }} -cf %s"
   become: "{{ not is_root_var }}"
+  register: cfg_sudoers_user_reg
   vars:
     title_var: "Sudo configuration for {{ priv_user }}"
     header_var: "\
@@ -78,3 +80,9 @@
 - name: Run tasks to cleanup after SELinux user configuration
   ansible.builtin.include_tasks: cfg_priv_ssh_cmd_sudo_selinux_cleanup.yml
   when: tmp_root_reg is defined
+
+# This is for the o0_o.host.users role.
+- name: Record user configuration change
+  ansible.builtin.set_fact:
+    user_change: true
+  when: cfg_sudoers_reg is changed or cfg_sudoers_user_reg is changed

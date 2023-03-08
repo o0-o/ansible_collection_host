@@ -16,33 +16,39 @@
 # accidentally targeting localhost when configuring virtual hosts on
 # local NAT). To target localhost, use the local connection type or
 # SSH with an ansible_host value other than 127.0.0.1.
-- name: The connection was valid and successful
+- name: Use the connection if it was successful
   ansible.builtin.set_fact:
-    use_con: true
-  when:
-    - not ( ansible_host == '127.0.0.1'
-            and ansible_port | default('22') | string == '22' )
-    # rescue will not catch a failure from an unreachable host, so we
-    # ignore unreachable during the test, and fail here instead so that
-    # the rescue portion of the block will be triggered.
-    - not test_con_reg is failed
-    - not test_con_reg is unreachable
+    use_con: >-
+      {{  not ( ansible_host == '127.0.0.1'
+                and ansible_port | default('22') | string == '22' )
+          and test_con_reg is not failed
+          and test_con_reg is not unreachable }}
 
 - name: Scope functional connection variables for general use
   ansible.builtin.set_fact:
-    "{{ var_item }}": "{{ vars[var_item] }}"
+    ansible_host: "{{ ansible_host }}"
+    ansible_connection: "{{ ansible_connection }}"
+    ansible_port: "{{ ansible_port | default(omit) }}"
+    ansible_ssh_private_key_file: "{{ ansible_ssh_private_key_file
+                                      | default(omit) }}"
+    ansible_user: "{{ ansible_user }}"
+    ansible_network_os: "{{ ansible_network_os | default(omit) }}"
+    ansible_network_cli_ssh_type: "{{ ansible_network_cli_ssh_type
+                                      | default(omit) }}"
   changed_when:
-    pre_vars[var_item] is undefined
-    or pre_vars[var_item] | default != vars[var_item]
-  when:
-    - use_con
-    - vars[var_item] is defined
-  loop:
-    - ansible_host
-    - ansible_connection
-    - ansible_port
-    - ansible_ssh_private_key_file
-    - ansible_user
-  loop_control:
-    loop_var: var_item
+    pre_vars['ansible_host'] | default
+    !=  vars['ansible_host'] | default
+    or  pre_vars['ansible_connection'] | default
+        !=  vars['ansible_connection'] | default
+    or  pre_vars['ansible_port'] | default
+        !=  vars['ansible_port'] | default
+    or  pre_vars['ansible_ssh_private_key_file'] | default
+        !=  vars['ansible_ssh_private_key_file'] | default
+    or  pre_vars['ansible_user'] | default
+        !=  vars['ansible_user'] | default
+    or  pre_vars['ansible_network_os'] | default
+        !=  vars['ansible_network_os'] | default
+    or  pre_vars['ansible_network_cli_ssh_type'] | default
+        !=  vars['ansible_network_cli_ssh_type'] | default
+  when: use_con
   notify: update host inventory variables

@@ -12,6 +12,7 @@
       - interfaces
       - hardware
       - default
+  retries: 3
 
 - name: Get software ID (RouterOS)
   community.routeros.command:

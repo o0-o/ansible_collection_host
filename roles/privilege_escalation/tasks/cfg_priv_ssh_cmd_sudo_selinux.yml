@@ -35,3 +35,9 @@
   register: user_selinux_context_change_reg
   become: "{{ not is_root_var }}"
   notify: restore selinux contexts
+
+# This is for the o0_o.host.users role.
+- name: Record user configuration change
+  ansible.builtin.set_fact:
+    user_change: true
+  when: user_selinux_context_change_reg is changed

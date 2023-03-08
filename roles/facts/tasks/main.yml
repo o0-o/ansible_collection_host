@@ -14,6 +14,18 @@
     line_var:
       - "{{ ( '  ' * ident_var | int ) | string + ansible_role_name }}"
 
+- name: Define the public SSH key
+  ansible.builtin.set_fact:
+    ssh_pub_key:
+      type: "{{ key_var | split(' ') | first | split('-') | last }}"
+      pub: "{{ ( key_var | split(' ') )[1] }}"
+  vars:
+    ansible_pub_key_var: >-
+      {{  lookup( 'ansible.builtin.pipe',
+                  'ssh-keygen -y -f ' + ansible_ssh_private_key_file ) }}
+    key_var: "{{  ( ansible_ssh_private_key_file is defined )
+                  | ternary(ansible_pub_key_var, local_ssh_pub_key) }}"
+
 - name: Run tasks to determine if the raw module should be used
   ansible.builtin.include_tasks: def_raw.yml
 

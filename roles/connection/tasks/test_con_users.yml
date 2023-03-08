@@ -10,6 +10,6 @@
     ansible_user: "{{ adm_item }}"
   when: not use_con
 
-- name: "Test {{ ansible_user }}@{{ ansible_host }}"
+- name: "Test connection with user {{ ansible_user }}"
   ansible.builtin.include_tasks: test_con_oses.yml
   when: not use_con

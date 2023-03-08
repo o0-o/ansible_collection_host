@@ -5,8 +5,8 @@
 #
 ########################################################################
 
-- name:
-    Get the contents of /etc/os-release to determine the OS of the host (raw)
+- name: Get the contents of /etc/os-release to determine the OS of the host
+    (raw)
   ansible.builtin.raw: cat /etc/os-release
   register: os_release_reg
   changed_when: false

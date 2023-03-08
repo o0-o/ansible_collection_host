@@ -8,7 +8,7 @@
 - name: Add SSH key to the root user
   ansible.posix.authorized_key:
     user: root
-    key: "{{ ssh_pub_key }}"
+    key: "ssh-{{ ssh_pub_key['type'] }} {{ ssh_pub_key['pub'] }}"
     state: present
   become: true
   register: root_ssh_key_reg

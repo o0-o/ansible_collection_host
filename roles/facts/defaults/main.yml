@@ -13,9 +13,11 @@ bad_serials:
 # Replicate ssh-copy-id behavior using most recent key first
 ssh_pub_key_local_file: >-
   {{  lookup('ansible.builtin.pipe', 'ls -Lt1 ~/.ssh/*.pub').splitlines()
+      | reject('match', '^\s*#.*')
+      | reject('match', '^\s*$')
       | first }}
 local_ssh_pub_key: >-
-  {{ lookup( 'ansible.builtin.file', ssh_pub_key_local_file) }}
+  {{ lookup('ansible.builtin.file', ssh_pub_key_local_file) }}
 
 # Rely on the raw module by default
 use_raw: "{{ ansible_connection == 'ssh' }}"

@@ -37,7 +37,7 @@
 - name: Remove SSH key to the root user
   ansible.posix.authorized_key:
     user: root
-    key: "{{ ssh_pub_key }}"
+    key: "ssh-{{ ssh_pub_key['type'] }} {{ ssh_pub_key['pub'] }}"
     state: absent
   become: true
   when: root_ssh_key_reg is changed

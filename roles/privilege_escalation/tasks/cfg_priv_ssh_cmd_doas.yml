@@ -16,6 +16,7 @@
     backup: true
     validate: "{{ doas_bin }} -C %s"
   become: "{{ not is_root_var }}"
+  register: cfg_doas_reg
 
 # Remove unnecessary software
 - name: Remove the sudo package
@@ -23,3 +24,9 @@
     name: sudo
     state: absent
   become: "{{ not is_root_var }}"
+
+# This is for the o0_o.host.users role.
+- name: Record user configuration change
+  ansible.builtin.set_fact:
+    user_change: true
+  when: cfg_doas_reg is changed

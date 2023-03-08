@@ -5,15 +5,6 @@
 #
 ########################################################################
 
-- name: Define the public SSH key
-  ansible.builtin.set_fact:
-    ssh_pub_key: "{{  ( ansible_ssh_private_key_file is defined )
-                      | ternary(ansible_pub_key_var, local_ssh_pub_key) }}"
-  vars:
-    ansible_pub_key_var: >-
-      {{  lookup( 'ansible.builtin.pipe',
-                  'ssh-keygen -y -f ' + ansible_ssh_private_key_file ) }}
-
 - name: Gather facts
   ansible.builtin.setup:
 

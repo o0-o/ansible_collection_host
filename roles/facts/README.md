@@ -28,7 +28,7 @@ The default ssh public key local file the most recently modified result of `~/.s
 
 #### `ssh_pub_key`
 
-By default, the ssh public key is set to the contents of `ssh_pub_key_local_file`. Overriding `ssh_pub_key` will circumvent the use of `ssh_pub_key_local_file`.
+By default, the ssh public key is set to the contents of `ssh_pub_key_local_file` unless `ansible_ssh_private_key_file` is defined, in which case, the corresponding public key is used.
 
 #### `root_grp`
 
