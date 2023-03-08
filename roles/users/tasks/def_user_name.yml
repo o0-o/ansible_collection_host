@@ -1,0 +1,33 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define a user's name
+#
+########################################################################
+
+- name: Reset user name
+  ansible.builtin.set_fact:
+    user_name: ''
+
+# TODO: handle collisions
+- name: Define the user name
+  ansible.builtin.set_fact:
+    user_name: "{{  user_name | default('') | string
+                    + user_name_char_var | string }}"
+  vars:
+    rand_char_var: >-
+      {{  lookup( 'ansible.builtin.password',
+                  '/dev/null chars=ascii_lowercase,digits length=1' ) }}
+    user_name_char_var: "{{ ( user_name_char_item == '?' )
+                            | ternary(rand_char_var, user_name_char_item) }}"
+  loop: "{{ user_var['name'] | list }}"
+  loop_control:
+    loop_var: user_name_char_item
+
+# Needed to track system users
+- name: Define the user in the users list if it isn't already
+  ansible.builtin.set_fact:
+    users: "{{ users | combine(user_dict_var) }}"
+  vars:
+    user_dict_var: "{{ { user_name: users[ user_var['name'] ] } }}"
+  when: user_name != user_var['name']

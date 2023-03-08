@@ -1,0 +1,39 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure a user
+#
+########################################################################
+
+- name: Run tasks to define the user's name
+  ansible.builtin.include_tasks: def_user_name.yml
+
+- name: Run platform-specific tasks to configure the user
+  ansible.builtin.include_tasks:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'tasks',
+                      prefix='cfg_user_' ) }}"
+
+- name: Run platform-specific tasks to configure the user's SSH keys
+  ansible.builtin.include_tasks:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'tasks',
+                      prefix='cfg_user_keys_' ) }}"
+
+- name: Run the o0_o.host.privilege_escalation role for administrators
+  ansible.builtin.include_role:
+    role: o0_o.host.privilege_escalation
+    public: true
+    allow_duplicates: true
+  vars:
+    priv_user: "{{ user_name }}"
+  when:
+    - user_var['adm'] | default(false)
+      or user_var['anisble'] | default(false)
+    # Privilege escalation should have already been configured for the
+    # current Ansible user as a dependency.
+    - ansible_user not in [user_name, user_name + '+cet1024w']
+
+- name: Run tasks to change the Ansible user
+  ansible.builtin.include_tasks: cfg_user_ansible.yml
+  when: user_var['ansible'] | default(false)

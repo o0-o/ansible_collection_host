@@ -1,0 +1,92 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure local users
+#
+########################################################################
+
+- name: BEGIN HOST USERS ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ ident_var }}"
+    role_call: "{{ role_call | default([]) + line_var }}"
+  vars:
+    ident_var: "{{ role_call_ident | default(-1) | int + 1 }}"
+    line_var:
+      - "{{ ( '  ' * ident_var | int ) | string + ansible_role_name }}"
+
+- name: Reset user change state
+  ansible.builtin.set_fact:
+    change_user: false
+
+- name: Run tasks to define users
+  ansible.builtin.include_tasks: def_users.yml
+
+# Non-system users that are not included in the users dictionary will be
+# deleted (unless no users dictionary was provided). Cannot delete root
+# or the current Ansible user.
+- name: Run tasks to delete extra users or users marked for deletion
+  ansible.builtin.include_tasks:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'tasks',
+                      prefix='del_user_' ) }}"
+  vars:
+    current_user_names_var: "{{ current_user_list | map(attribute='name') }}"
+    user_names_var: "{{ user_list | map(attribute='name') }}"
+    extra_user_names_var: >-
+      {{ current_user_names_var | difference(user_names_var) }}
+    del_user_names_var: "{{ user_list
+                            | selectattr('del', 'defined')
+                            | selectattr('del', '==', true)
+                            | map(attribute='name') }}"
+    ansible_user_var: >-
+      {{  ( ansible_network_os | default == 'community.network.routeros' )
+          | ternary( ansible_user | split('+') | first, ansible_user ) }}
+  when: del_user_name_item not in ['root', ansible_user_var]
+  loop: "{{ extra_user_names_var + del_user_names_var }}"
+  loop_control:
+    loop_var: del_user_name_item
+
+- name: Run tasks to configure the list of desired users
+  ansible.builtin.include_tasks: cfg_user.yml
+  # Use indexed loop for optimal, parallel execution
+  vars:
+    user_var: "{{ user_list[user_index] }}"
+  when: not user_var['del'] | default(false)
+  loop: "{{ range( 0, user_list | length ) | list }}"
+  loop_control:
+    loop_var: user_index
+
+# If any users changes occurred, build the current user list again.
+- name: Run tasks to redefine the list of current users
+  ansible.builtin.include_tasks: def_users_current.yml
+  when: user_change
+
+- name: Reset users dictionary
+  ansible.builtin.set_fact:
+    users_dict: {}
+
+# Build the users dictionary from the current users so that the
+# inventory will reflect the true state of the host.
+- name: Run tasks to convert the user list into a dictionary
+  ansible.builtin.include_tasks: def_users_dict.yml
+  vars:
+    user_var: "{{ current_user_list[user_index] }}"
+    user_key_var: "{{ user_var['name'] }}"
+  # Use indexed loop for optimal, parallel execution
+  loop: "{{ range( 0, current_user_list | length ) | list }}"
+  loop_control:
+    loop_var: user_index
+
+- name: Define the users dictionary
+  ansible.builtin.set_fact:
+    users: "{{ users_dict }}"
+  changed_when: pre_vars['users'] | default != users_dict
+  notify: update host inventory variables
+
+- name: Reset user change tracker
+  ansible.builtin.set_fact:
+    user_change: false
+
+- name: END HOST USERS ROLE
+  ansible.builtin.set_fact:
+    role_call_ident: "{{ role_call_ident | int - 1 }}"

@@ -1,0 +1,36 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure a new Ansible user
+#
+########################################################################
+
+- name: Record the current Ansible user name before switching
+  ansible.builtin.set_fact:
+    previous_ansible_user: >-
+      {{  ( ansible_network_os | default == 'community.network.routeros' )
+          | ternary( ansible_user | split('+') | first, ansible_user ) }}
+
+- name: Set Ansible user to the current user
+  ansible.builtin.set_fact:
+    ansible_user: >-
+      {{  ( ansible_network_os | default == 'community.network.routeros' )
+          | ternary( user_name + '+cet1024w', user_name ) }}
+
+- name: Run the o0_o.host.connection role to set the new Ansible user
+  ansible.builtin.include_role:
+    role: o0_o.host.connection
+    public: true
+    allow_duplicates: true
+
+- name: Run tasks to delete the previous Ansible user if it is not in the
+    users dictionary
+  ansible.builtin.include_tasks:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'tasks',
+                      prefix='del_user_' ) }}"
+  vars:
+    del_user_name_var: "{{ previous_ansible_user }}"
+  when:
+    users[ previous_ansible_user ] is undefined
+    or users[ previous_ansible_user ]['del'] | default(false)

@@ -1,0 +1,13 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# User variables
+#
+########################################################################
+
+def_users_deps:
+  - role: o0_o.host.privilege_escalation
+  - role: o0_o.host.facts
+    dupes: true
+    condition: ssh_pub_key is undefined
+#  - role: o0_o.service.ssh

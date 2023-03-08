@@ -1,0 +1,53 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define a list of current users on a macOS host
+#
+########################################################################
+
+- name: Get a list of user names (macOS)
+  ansible.builtin.command:
+    argv:
+      - dscl
+      - .
+      - list
+      - /Users
+  become: true
+  register: macos_user_names_reg
+  changed_when: false
+
+- name: Get a list of user dictionaries (macOS)
+  ansible.builtin.command:
+    argv:
+      - dscacheutil
+      - -q
+      - user
+      - -a
+      - name
+      - "{{ user_name_item }}"
+  become: true
+  register: macos_users_reg
+  changed_when: false
+  loop: "{{ macos_user_names_reg['stdout_lines']
+            | reject('match', ignore_user_name_re) }}"
+  loop_control:
+    loop_var: user_name_item
+
+- name: Define a list of current users (macOS)
+  ansible.builtin.set_fact:
+    current_user_list: "{{ current_user_list | union( [user_item] ) }}"
+  when:
+    - user_item['shell'] not in sys_shells
+      or users[user_name_item] is defined
+    - user_item['uid'] | int >= sys_id_thresh | int
+      or user_item['uid'] | int == 0
+      or user_item['name'] == ansible_user
+      or users[user_name_item] is defined
+  loop: >-
+    {{  macos_users_reg['results']
+        | map(attribute='stdout')
+        | map('regex_replace', '^password: .*', '')
+        | map('regex_replace', 'dir: ', 'home: ')
+        | map('from_yaml') }}
+  loop_control:
+    loop_var: user_item

@@ -1,0 +1,69 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define current users and users to configure in lists
+#
+########################################################################
+
+- name: Load platform-specific user variables
+  ansible.builtin.include_vars:
+    file: "{{ lookup( 'o0_o.host.first_found_by_host_attributes',
+                      'vars',
+                      skip=true ) }}"
+
+# In case the role is run more than once.
+- name: Reset user change
+  ansible.builtin.set_fact:
+    user_change: false
+
+- name: Run role dependencies
+  ansible.builtin.include_tasks: def_users_dep.yml
+  loop: "{{ def_users_deps }}"
+  loop_control:
+    loop_var: def_users_dep_item
+
+- name: Run tasks to define a list of current users
+  ansible.builtin.include_tasks: def_users_current.yml
+
+- name: Define the list of desired users based on the current users
+  ansible.builtin.set_fact:
+    user_list: "{{ current_user_list }}"
+  when: users is undefined
+
+- name: Define the list of desired users based on the users dictionary
+  ansible.builtin.set_fact:
+    user_list: "{{ user_list | default([]) | union( [user_var] ) }}"
+  vars:
+    user_var: >-
+      {{ users[user_name_item] | combine( {'name': user_name_item} ) }}
+  when: users is defined
+  loop: "{{ users.keys() | list }}"
+  loop_control:
+    loop_var: user_name_item
+
+- name: Ansible user must have Ansible's public SSH key
+  ansible.builtin.set_fact:
+    user_list: >-
+      {{  user_list[:user_index | int]
+          + [update_user_var]
+          + user_list[user_index | int + 1:] }}
+  vars:
+    user_var: "{{ user_list[user_index] }}"
+    user_def_var:
+      ssh:
+        auth:
+          - "{{ ssh_pub_key }}"
+    update_user_var: "{{ user_var | combine(  user_def_var,
+                                              recursive=true,
+                                              list_merge='append' ) }}"
+    ansible_user_var: >-
+      {{  ( ansible_network_os | default == 'community.network.routeros' )
+          | ternary( ansible_user | split('+') | first, ansible_user ) }}
+  when:
+    - user_var['name'] == ansible_user_var
+      or user_var['ansible'] | default(false)
+    - ssh_pub_key not in user_var['ssh']['auth'] | default([])
+    - user_var != update_user_var
+  loop: "{{ range( 0, user_list | length ) | list }}"
+  loop_control:
+    loop_var: user_index

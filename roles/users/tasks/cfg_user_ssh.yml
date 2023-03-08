@@ -1,0 +1,71 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure a user
+#
+########################################################################
+
+- name: Configure the user's groups
+  ansible.builtin.group:
+    name: "{{ group_name_item }}"
+    # System groups are identified by a GID that is beneath the system
+    # threshold (usually 1000, but 500 on macOS). If the group doesn't
+    # exist yet, it inherits system status from the user.
+    system: >-
+      {{  current_grps[group_name_item]['gid'] | default(sys_id_thresh) | int
+          < sys_id_thresh | int
+          or  ( current_grps[group_name_item]['gid'] is undefined
+                and ( user_var['sys'] | default(false)
+                      or  user_var['uid'] | default(sys_id_thresh) | int
+                          < sys_id_thresh ) ) }}
+    state: present
+  become: true
+  register: cfg_grp_reg
+  loop: "{{ user_var['groups'] | default([]) }}"
+  loop_control:
+    loop_var: group_name_item
+
+- name: Configure the user
+  ansible.builtin.user:
+    comment: "{{ user_var['gecos'] | default(omit) }}"
+    create_home: true
+    group: "{{ user_var['group'] | default(omit) }}"
+    groups: "{{ user_var['groups'] | default(omit) }}"
+    home: "{{ user_var['home'] | default(omit) }}"
+    move_home: true
+    name: "{{ user_name }}"
+    password: >-
+      {{ user_var['lock'] | default(false) | ternary(pwd_lock, omit) }}
+    # Password lock is unsupported on macOS and produces an error on
+    # the root user in OpenBSD
+    password_lock: >-
+      {{  ( ansible_system | lower != 'darwin'
+            and ( ansible_system | lower != 'openbsd'
+                  and user_var['uid'] | int == 0 )
+            and user_var['lock'] | default(false) )
+          | ternary(true, omit) }}
+    # System accounts use system_u, administrators use staff_u and
+    # and regular users use user_u. Omitted for root.
+    seuser: "{{ ( mac == 'selinux' and user_var['uid'] | int != 0 )
+                | ternary(seuser_var, omit) }}"
+    shell: "{{ user_var['shell'] | default(omit) }}"
+    state: present
+    system: "{{ sys_var }}"
+    uid: "{{ user_var['uid'] | default(omit) }}"
+  become: true
+  register: cfg_user_reg
+  vars:
+    sys_var: "{{ user_var['uid'] | default(sys_id_thresh) | int
+                < sys_id_thresh | int
+                or user_var['sys'] | default(false) }}"
+    seuser_var: >-
+      {{  sys_var
+          | ternary(  'system_u',
+                      user_var['adm']
+                      | default(false)
+                      | ternary('staff_u', 'user_u') ) }}
+
+- name: Record user configuration change
+  ansible.builtin.set_fact:
+    user_change: true
+  when: cfg_grp_reg is changed or cfg_user_reg is changed

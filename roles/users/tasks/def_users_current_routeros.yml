@@ -1,0 +1,35 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define a list of users currently on a RouterOS host
+#
+########################################################################
+
+- name: Get a list of users (RouterOS)
+  community.routeros.command:
+    commands:
+      - put [/user print proplist=name,group terse show-ids]
+  register: ros_users_reg
+  changed_when: false
+
+- name: Define a list of current users (RouterOS)
+  ansible.builtin.set_fact:
+    current_user_list: "{{ current_user_list | union( [user_var] ) }}"
+  vars:
+    user_var:
+      name: "{{ user_item
+                | select('match', '^name=.*')
+                | first
+                | split('=')
+                | last }}"
+      uid: "{{ user_item[0][1:] }}"
+      adm: "{{ grp_var == 'full' }}"
+      group: "{{ grp_var }}"
+    grp_var: "{{  user_item
+                  | select('match', '^group=.*')
+                  | first
+                  | split('=')
+                  | last }}"
+  loop: "{{ ros_users_reg['stdout_lines'][0] | map('split', ' ') }}"
+  loop_control:
+    loop_var: user_item

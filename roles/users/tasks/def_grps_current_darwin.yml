@@ -1,0 +1,49 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define a dictionary of groups currently on a macOS host
+#
+########################################################################
+
+- name: Get a list of group names (macOS)
+  ansible.builtin.command:
+    argv:
+      - dscl
+      - .
+      - list
+      - /Groups
+  become: true
+  register: macos_grp_names_reg
+  changed_when: false
+
+- name: Get a list of group dictionaries (macOS)
+  ansible.builtin.command:
+    argv:
+      - dscacheutil
+      - -q
+      - group
+      - -a
+      - name
+      - "{{ grp_name_item }}"
+  become: true
+  register: macos_grps_reg
+  changed_when: false
+  loop: "{{ macos_grp_names_reg['stdout_lines'] }}"
+  loop_control:
+    loop_var: grp_name_item
+
+- name: Define a dictionary of current groups (macOS)
+  ansible.builtin.set_fact:
+    current_grps: "{{ current_grps | combine(grp_var, recursive=true) }}"
+  vars:
+    grp_var: "{{ { grp_name_item: grp_val_var } }}"
+    grp_val_var:
+      gid: "{{ grp_item['gid'] }}"
+      members: "{{ grp_item['users'] | split(' ') }}"
+  loop: >-
+    {{  macos_grp_reg['results']
+        | map(attribute='stdout')
+        | map('regex_replace', '^password: .*', '')
+        | map('from_yaml') }}
+  loop_control:
+    loop_var: grp_item

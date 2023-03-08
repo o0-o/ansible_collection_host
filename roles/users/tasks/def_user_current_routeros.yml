@@ -1,0 +1,52 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define a user's SSH credentials on a RouterOS host
+#
+########################################################################
+
+- name: Reset authorized SSH key list
+  ansible.builtin.set_fact:
+    user_auth_keys: []
+
+- name: Get the number of authorized SSH for the user (RouterOS)
+  community.routeros.command:
+    commands:
+      - "put [:len [/user/ssh-keys find user={{ user_var['name'] }}]]"
+  register: ros_user_ssh_auth_key_num_reg
+  changed_when: false
+
+# Use key owner to track public key since it is impossible to extract
+# the key value from RouterOS once the key is added or imported.
+- name: Get a list of authorized SSH key owners for the user (RouterOS)
+  community.routeros.command:
+    commands:
+      - "foreach k in=[user/ssh-keys find user={{ user_var['name'] }}] do={
+        put [user/ssh-keys get value-name=key-owner number=$k] }"
+  register: ros_user_ssh_auth_key_owners_reg
+  changed_when: false
+  when: ros_user_ssh_auth_key_num_reg['stdout_lines'][0][0] | int > 0
+
+- name: Define the user's authorized SSH keys
+  ansible.builtin.set_fact:
+    user_auth_keys: "{{ user_auth_keys + [key_var] }}"
+  vars:
+    key_var:
+      pub: "{{ key_item }}=="
+      type: rsa
+  when: ros_user_ssh_auth_key_owners_reg is not skipped
+  loop: "{{ ros_user_ssh_auth_key_owners_reg['stdout_lines'][0] }}"
+  loop_control:
+    loop_var: key_item
+
+- name: Update the user item with group data
+  ansible.builtin.set_fact:
+    current_user_list: >-
+      {{  current_user_list[:user_index | int]
+          + [update_user_var]
+          + current_user_list[user_index | int + 1:] }}
+  vars:
+    user_def_var:
+      ssh:
+        auth: "{{ user_auth_keys | default([]) }}"
+    update_user_var: "{{ user_var | combine(user_def_var) }}"

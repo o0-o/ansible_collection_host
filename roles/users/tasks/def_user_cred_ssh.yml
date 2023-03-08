@@ -1,0 +1,45 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Read the public SSH keys from a file on the host
+#
+########################################################################
+
+- name: Reset ssh user keys list
+  ansible.builtin.set_fact:
+    user_ssh_keys: []
+
+- name: Check if the file exists
+  ansible.builtin.stat:
+    path: "{{ cred_file_var }}"
+  become: true
+  register: user_ssh_keys_file_reg
+
+- name: Get a list of keys from the host
+  ansible.builtin.slurp:
+    src: "{{ cred_file_var }}"
+  become: true
+  register: user_ssh_keys_reg
+  when: user_ssh_keys_file_reg['stat']['isreg'] | default(false)
+
+- name: Define a list of SSH keys for this user
+  ansible.builtin.set_fact:
+    user_ssh_keys: "{{ user_ssh_keys + key_var }}"
+  vars:
+    key_file_var: "{{ cred_file_var | basename }}"
+    key_file_no_ext_var: >-
+      {{  ( key_file_var | split('.') )[:-1]
+          | join
+          | default(key_file_var, true) }}
+    key_var:
+      - type: "{{ key_item[0] | split('-') | last }}"
+        pub: "{{ key_item[1] }}"
+        file: "{{ ( key_file_no_ext_var != 'authorized_keys' )
+                  | ternary(key_file_no_ext_var, omit) }}"
+  when: user_ssh_keys_reg is not skipped
+  loop: "{{ ( user_ssh_keys_reg['content'] | b64decode ).splitlines()
+            | reject('match', '^\\s*#.*$')
+            | reject('match', '^\\s*$')
+            | map('split', ' ') }}"
+  loop_control:
+    loop_var: key_item

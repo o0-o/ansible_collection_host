@@ -1,0 +1,29 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Convert the user list into a dictionary
+#
+########################################################################
+
+- name: Reset user
+  ansible.builtin.set_fact:
+    user: {}
+
+- name: Define a user in the user dictionary
+  ansible.builtin.set_fact:
+    user: "{{ user | combine( { user_attr_item: user_def_var } ) }}"
+  vars:
+    inv_user_var: "{{ pre_vars['users'][ user_var['name'] ] | default({}) }}"
+    user_def_var: "{{ user_var[user_attr_item]
+                      | default( inv_user_var[user_attr_item] ) }}"
+  when:
+    - user_attr_item not in ['name', 'ansible', 'sys', 'del', 'gid']
+    - not ( user_attr_item in ['adm']
+            and user_var[user_attr_item] == false )
+  loop: "{{ user_var.keys() | list | union( inv_user_var.keys() | list )}}"
+  loop_control:
+    loop_var: user_attr_item
+
+- name: Add/update the user in the users dictionary
+  ansible.builtin.set_fact:
+    users_dict: "{{ users_dict | combine( {user_key_var: user} ) }}"

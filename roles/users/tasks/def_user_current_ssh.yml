@@ -1,0 +1,89 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define a user including group membership and SSH credentials
+#
+########################################################################
+
+- name: Define the primary user group name
+  ansible.builtin.set_fact:
+    grp_name: "{{ ( current_grps
+                    | dict2items
+                    | selectattr('value.gid', '==', user_var['gid'] )
+                    | map(attribute='key') )
+                  | first }}"
+
+- name: Get a list of the user's groups
+  ansible.builtin.command:
+    argv:
+      - groups
+      - "{{ user_var['name'] }}"
+  become: true
+  register: user_grps_reg
+  changed_when: false
+
+- name: Run tasks to get the user's authorized SSH keys
+  ansible.builtin.include_tasks: def_user_cred_ssh.yml
+  vars:
+    cred_file_var: "{{ user_var['home'] }}/.ssh/authorized_keys"
+
+- name: Define the user's authorized SSH keys
+  ansible.builtin.set_fact:
+    user_auth_keys: "{{ user_ssh_keys }}"
+
+- name: Find public key files
+  ansible.builtin.find:
+    paths: "{{ user_var['home'] }}/.ssh"
+    file_type: file
+    patterns: '*.pub'
+  become: true
+  register: ssh_key_files_reg
+
+- name: Run tasks to define the user's public SSH keys
+  ansible.builtin.include_tasks: def_user_cred_ssh.yml
+  vars:
+    cred_file_var: "{{ file_item['path'] }}"
+  loop: "{{ ssh_key_files_reg['files'] | default([]) }}"
+  loop_control:
+    loop_var: file_item
+
+- name: Define the user's public SSH keys
+  ansible.builtin.set_fact:
+    user_pub_keys: "{{  ( ssh_key_files_reg['files']
+                          | default([])
+                          | length > 0 )
+                        | ternary(user_ssh_keys, []) }}"
+
+- name: Check for administrator privileges
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_become_method }}"
+      - 'true'
+  become: true
+  become_user: "{{ user_var['name'] }}"
+  register: adm_user_reg
+  changed_when: false
+  failed_when: false
+  timeout: 5
+
+- name: Update the user item with group data
+  ansible.builtin.set_fact:
+    current_user_list: >-
+      {{  current_user_list[:user_index | int]
+          + [update_user_var]
+          + current_user_list[user_index | int + 1:] }}
+  vars:
+    user_def_var:
+      adm: "{{  adm_user_reg['rc'] | default(1) | int == 0
+                and user_var['uid'] | int != 0 }}"
+      group: "{{ grp_name }}"
+      groups: "{{ user_grps_reg['stdout_lines'][0]
+                  | split(':')
+                  | last
+                  | trim
+                  | split(' ')
+                  | sort }}"
+      ssh:
+        auth: "{{ user_auth_keys | default([]) }}"
+        id: "{{ user_pub_keys | default([]) }}"
+    update_user_var: "{{ user_var | combine(user_def_var) }}"

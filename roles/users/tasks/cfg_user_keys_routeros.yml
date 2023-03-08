@@ -1,0 +1,32 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure a user's SSH keys on a RouterOS host
+#
+########################################################################
+
+- name: Run tasks to configure each authorized SSH key for the user (RouterOS)
+  ansible.builtin.include_tasks: cfg_user_key_auth_routeros.yml
+  vars:
+    current_auth_keys_var: "{{  current_user_list
+                                | selectattr('name', '==', user_name)
+                                | selectattr('ssh.auth', 'defined')
+                                | map(attribute='ssh.auth')
+                                | flatten }}"
+  loop: "{{ user_var['ssh']['auth'] | default([]) | unique }}"
+  loop_control:
+    loop_var: key_item
+
+- name: Get the user's private SSH keys (RouterOS)
+  community.routeros.command:
+    commands:
+      - put [/user/ssh-keys/private find]
+  register: ros_user_ssh_pks_reg
+  changed_when: false
+
+- name: Do not allow RouterOS hosts to be SSH clients
+  community.routeros.command:
+    commands:
+      - "/user/ssh-keys/private remove
+        numbers=[/user/ssh-keys/private find]"
+  when: ros_user_ssh_pks_reg['stdout_lines'][0] != ['']

@@ -1,0 +1,34 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Define a list of current users
+#
+########################################################################
+
+- name: Use getent to gather user information from passwd
+  ansible.builtin.getent:
+    database: passwd
+  become: true
+
+- name: Define a list of current users
+  ansible.builtin.set_fact:
+    current_user_list: "{{ current_user_list | union( [user_dict_var] ) }}"
+  vars:
+    user_attr_list_var: "{{ getent_passwd[user_name_item] }}"
+    user_dict_var:
+      name: "{{ user_name_item }}"
+      uid: "{{ user_attr_list_var[1] }}"
+      gid: "{{ user_attr_list_var[2] }}"
+      gecos: "{{ user_attr_list_var[3] }}"
+      home: "{{ user_attr_list_var[4] }}"
+      shell: "{{ user_attr_list_var[5] }}"
+  when:
+    - user_dict_var['shell'] not in sys_shells
+      or users[user_name_item] | type_debug == 'dict'
+    - user_dict_var['uid'] | int >= sys_id_thresh | int
+      or user_dict_var['uid'] | int == 0
+      or user_name_item == ansible_user
+      or users[user_name_item] | type_debug == 'dict'
+  loop: "{{ getent_passwd.keys() | list }}"
+  loop_control:
+    loop_var: user_name_item

@@ -1,0 +1,44 @@
+---
+# vim: ts=2:sw=2:sts=2:et:ft=yaml.ansible
+#
+# Configure a user on a RouterOS host
+#
+########################################################################
+
+- name: Configure the user's group (RouterOS)
+  community.routeros.command:
+    commands:
+      - "/user/group add name={{ user_var['group'] }}"
+  register: ros_cfg_grp_reg
+  changed_when: "ros_cfg_grp_reg['stdout_lines'][0][0]
+    != 'failure: group with the same name already exists'"
+
+# Password is required. We don't use passwords so it is set to random
+# and unknown.
+- name: Configure the user (RouterOS)
+  community.routeros.command:
+    commands:
+      - "/user add name={{ user_name }}
+        group={{ grp_var }}
+        password={{ pw_var }}"
+      - "/user set {{ user_name }}
+        group={{ grp_var }}
+        password={{ pw_var }}"
+  no_log: true
+  register: ros_cfg_user_reg
+  when:
+    ( current_user_list | selectattr('name', '==', user_name) )[0]['group']
+    | default
+    != grp_var
+  vars:
+    grp_var: "{{  user_var['adm']
+                  | default(false)
+                  | ternary( 'full', user_var['group'] | default('read') ) }}"
+    pw_var: >-
+      {{  lookup( 'ansible.builtin.password',
+                  '/dev/null chars=ascii_lowercase,digits length=23' ) }}
+
+- name: Record user configuration change
+  ansible.builtin.set_fact:
+    user_change: true
+  when: ros_cfg_grp_reg is changed or ros_cfg_user_reg is changed
