@@ -25,3 +25,8 @@
 * Better handle cases where Ansible user is root
 * Fix condition on running roles if the Python interpreter is changed
 * Fix IP loop in connection role
+
+## `1.0.0-alpha.4`
+
+* `o0_o.host.users` role added.
+* Various changes to other roles to support the `users` role.
