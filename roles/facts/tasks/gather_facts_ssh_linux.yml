@@ -20,7 +20,7 @@
                     | last
                     | regex_replace('[)(]', '') }}"
 
-- name: Define the systemd major and minor versions
+- name: Define the systemd major and minor versions (Linux)
   ansible.builtin.set_fact:
     sysd_maj_vers: "{{ sysd_vers | split('.') | first }}"
     sysd_min_vers: "{{ sysd_vers | split('.') | last }}"

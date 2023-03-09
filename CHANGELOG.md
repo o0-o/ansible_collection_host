@@ -17,7 +17,6 @@
 
 * Minor aesthetic changes after initial Galaxy import
 
-
 ## `1.0.0-alpha.3`
 
 * Use * for lists in README to be compatible with RST
@@ -30,3 +29,7 @@
 
 * `o0_o.host.users` role added.
 * Various changes to other roles to support the `users` role.
+
+## `1.0.0-alpha.5`
+
+* Fix misc bugs relating to interactions between users privilege escalation roles

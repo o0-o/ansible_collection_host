@@ -12,6 +12,7 @@
       - "{{ ansible_become_method }}"
   become: true
   register: test_priv_reg
+  ignore_errors: true
   failed_when: false
   changed_when: false
   when: not is_root_var

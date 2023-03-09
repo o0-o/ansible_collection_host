@@ -29,7 +29,7 @@
     priv_user: "{{ user_name }}"
   when:
     - user_var['adm'] | default(false)
-      or user_var['anisble'] | default(false)
+      or user_var['ansible'] | default(false)
     # Privilege escalation should have already been configured for the
     # current Ansible user as a dependency.
     - ansible_user not in [user_name, user_name + '+cet1024w']

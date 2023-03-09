@@ -24,8 +24,9 @@
   loop_control:
     loop_var: user_name_char_item
 
-# Needed to track system users
-- name: Define the user in the users list if it isn't already
+# Needed to track user attributes that aren't pulled into
+# current_user_list like lock.
+- name: Define the user in the users dictionary if it isn't already
   ansible.builtin.set_fact:
     users: "{{ users | combine(user_dict_var) }}"
   vars:

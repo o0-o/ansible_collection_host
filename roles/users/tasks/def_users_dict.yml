@@ -13,7 +13,7 @@
   ansible.builtin.set_fact:
     user: "{{ user | combine( { user_attr_item: user_def_var } ) }}"
   vars:
-    inv_user_var: "{{ pre_vars['users'][ user_var['name'] ] | default({}) }}"
+    inv_user_var: "{{ users[ user_var['name'] ] | default({}) }}"
     user_def_var: "{{ user_var[user_attr_item]
                       | default( inv_user_var[user_attr_item] ) }}"
   when:

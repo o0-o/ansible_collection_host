@@ -45,3 +45,22 @@
       ansible.builtin.debug:
         msg: >-
           ansible_product_serial={{ ansible_product_serial | default('') }}
+
+- name: Try to use the which command
+  ansible.builtin.command: which which
+  register: which_reg
+  changed_when: false
+  failed_when: false
+
+- name: Try to use command
+  ansible.builtin.command: command -v command
+  register: command_reg
+  changed_when: false
+  failed_when: false
+
+- name: Define which command
+  ansible.builtin.set_fact:
+    which_command: "{{  ( command_reg['rc'] | default(1) == 0 )
+                        | ternary('command -v', which_var) }}"
+  vars:
+    which_var: "{{ which_reg['stdout_lines'][0] }}"

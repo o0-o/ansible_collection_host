@@ -41,12 +41,12 @@
     password_lock: >-
       {{  ( ansible_system | lower != 'darwin'
             and ( ansible_system | lower != 'openbsd'
-                  and user_var['uid'] | int == 0 )
+                  and uid_var == 0 )
             and user_var['lock'] | default(false) )
           | ternary(true, omit) }}
     # System accounts use system_u, administrators use staff_u and
     # and regular users use user_u. Omitted for root.
-    seuser: "{{ ( mac == 'selinux' and user_var['uid'] | int != 0 )
+    seuser: "{{ ( mac == 'selinux' and uid_var != 0 )
                 | ternary(seuser_var, omit) }}"
     shell: "{{ user_var['shell'] | default(omit) }}"
     state: present
@@ -55,6 +55,8 @@
   become: true
   register: cfg_user_reg
   vars:
+    # Use uid_var for comparisons, not the configured value of uid.
+    uid_var: "{{ user_var['uid'] | default(sys_id_thresh) | int }}"
     sys_var: "{{ user_var['uid'] | default(sys_id_thresh) | int
                 < sys_id_thresh | int
                 or user_var['sys'] | default(false) }}"
