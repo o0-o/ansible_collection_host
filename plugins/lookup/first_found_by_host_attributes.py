@@ -256,7 +256,7 @@ class LookupModule(first_found.LookupModule):
                     plat_attrs = plat_attrs + [str(plat_var)]
 
                 # Define the full file name to be passed to first_found
-                file = prefix + delim.join(plat_attrs) + suffix + '.' + ext
+                file = prefix + delim.join(plat_attrs).lower() + suffix + '.' + ext
                 files.append(file)
 
         # Handle default file name if it was defined in the plugin
